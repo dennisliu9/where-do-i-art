@@ -10,10 +10,16 @@ function swapView(dataView) {
   }
 }
 
+// Logo text switches to landing view
+var $topLogo = document.querySelector('#top-logo');
+$topLogo.addEventListener('click', function (event) {
+  swapView(event.target.dataset.viewLink);
+});
+
 // Show Something button switches to selection view
 var $showSomething = document.querySelector('#show-something');
 $showSomething.addEventListener('click', function (event) {
-  swapView(event.target.getAttribute('data-view-link'));
+  swapView(event.target.dataset.viewLink);
 });
 
 // Metropolitan Museum of Art API
