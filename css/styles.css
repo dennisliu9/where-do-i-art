@@ -1,0 +1,105 @@
+/*
+Font size guide
+h1: 48px (Poppins Semibold)
+h2/logo: 32px (Poppins Semibold)
+main buttons: 15px (Raleway Bold)
+landing chips: 14px (Raleway Regular)
+metadata chips: 12px (Raleway Regular
+h4/subheader: 24px (Poppins Bold)
+subtext: 24px (Poppins Semibold)
+icons (desktop): 30px
+small headline on metadata (h5): 18px (RalewayBold)
+*/
+
+:root {
+  --color-accent: #ff971d;
+  --color-light: #fff6de;
+  --color-no: #c01d25;
+  --color-yes: #b6ec4b;
+  --color-grey: #adadad;
+  --color-white: #fff;
+  --color-black: #000;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 32px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ff-headers {
+  font-family: Poppins, sans-serif;
+}
+
+.ff-main {
+  font-family: Raleway, sans-serif;
+}
+
+.fw-light {
+  font-weight: 300;
+}
+
+.fw-normal {
+  font-weight: 400;
+}
+
+.fw-semibold {
+  font-weight: 600;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.bg-color-accent {
+  background-color: var(--color-accent);
+}
+
+.color-white {
+  color: var(--color-white);
+}
+
+.drop-shadow {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14);
+}
+
+.button-main {
+  text-decoration: none;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.button-main:hover {
+  filter: brightness(1.1) saturate(150%);
+}
+
+.button-main:active {
+  border: 2px var(--color-accent) solid;
+  background-color: var(--color-white);
+  color: var(--color-accent);
+}
+
+.chips-main {
+  font-size: 14px;
+}
+
+/* Specific Element CSS rules */
+#top-logo:hover {
+  cursor: pointer;
+}
