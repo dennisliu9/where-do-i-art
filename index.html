@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -23,14 +24,29 @@
     </div>
   </header>
   <main>
-    <div class="container" data-view="landing">
+    <div class="container margin-t-5" data-view="landing">
       <div class="row flex-wrap-on text-center">
         <div class="col-full">
           <h1 class="ff-headers">Let's start finding something cool</h1>
         </div>
-        <div class="col-full">
+        <div class="col-full margin-t-5">
           <a class="button-main ff-main bg-color-accent color-white" href="#">Show me something!</a>
         </div>
+      </div>
+    </div>
+    <div class="container margin-t-5 hidden" data-view="selection">
+      <div class="row jc-center">
+        <div class="img-main">
+          <img src="https://images.metmuseum.org/CRDImages/ep/web-large/DP229743.jpg" alt="'Sunflowers' by Vincent van Gogh">
+        </div>
+      </div>
+      <div style="justify-content: space-evenly" class="row">
+        <a id="dislike-button" class="button-main ff-main text-center margin-tb-3" href="#">
+          <i class="fas fa-times"></i> I'm not feeling it
+        </a>
+        <a id="like-button" class="button-main ff-main text-center margin-tb-3" href="#">
+          <i class="fas fa-check"></i> I like it!
+        </a>
       </div>
     </div>
   </main>

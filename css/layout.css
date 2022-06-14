@@ -11,6 +11,14 @@
   width: 100%;
 }
 
+.col-1-2 {
+  width: 50%;
+}
+
+.col-1-4 {
+  width: 25%;
+}
+
 .jc-center {
   justify-content: center;
 }
@@ -25,9 +33,4 @@
 
 .text-center {
   text-align: center;
-}
-
-main h1 {
-  margin-top: 8rem;
-  margin-bottom: 8rem;
 }
