@@ -125,6 +125,7 @@ h5 {
 
 .img-main img {
   height: 100%;
+  max-width: 1000px;
   object-fit: contain;
 }
 

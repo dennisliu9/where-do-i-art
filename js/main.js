@@ -1,3 +1,48 @@
+//           //
+// variables //
+//           //
+
+var metEndpoint = 'https://collectionapi.metmuseum.org/public/collection/v1/';
+var metDepts = [];
+var metSearchResults = {};
+var metArtObj = {};
+
+// DOM objects
+var $topLogo = document.querySelector('#top-logo');
+var $showSomething = document.querySelector('#show-something');
+var $displayImage = document.querySelector('#display-image');
+var $dislikeButton = document.querySelector('#dislike-button');
+var $likeButton = document.querySelector('#like-button');
+
+//                 //
+// event listeners //
+//                 //
+
+// Logo text switches to landing view
+$topLogo.addEventListener('click', function (event) {
+  swapView(event.target.dataset.viewLink);
+});
+
+// Show Something button switches to selection view
+$showSomething.addEventListener('click', function (event) {
+  getArtwork();
+  swapView(event.target.dataset.viewLink);
+});
+
+$dislikeButton.addEventListener('click', function (event) {
+  data.dislikedObjects.push(metArtObj);
+  getArtwork();
+});
+
+$likeButton.addEventListener('click', function (event) {
+  data.likedObjects.push(metArtObj);
+  getArtwork();
+});
+
+//           //
+// functions //
+//           //
+
 // Swap view
 function swapView(dataView) {
   var $views = document.querySelectorAll('[data-view]');
@@ -10,27 +55,9 @@ function swapView(dataView) {
   }
 }
 
-// Logo text switches to landing view
-var $topLogo = document.querySelector('#top-logo');
-$topLogo.addEventListener('click', function (event) {
-  swapView(event.target.dataset.viewLink);
-});
-
-// Show Something button switches to selection view
-var $showSomething = document.querySelector('#show-something');
-$showSomething.addEventListener('click', function (event) {
-  swapView(event.target.dataset.viewLink);
-});
-
 //                                //
 // Metropolitan Museum of Art API //
 //                                //
-
-var metEndpoint = 'https://collectionapi.metmuseum.org/public/collection/v1/';
-
-// Get departments, assuming departments will not change in single session
-// but may change in the future.
-var metDepts = [];
 
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
@@ -43,7 +70,6 @@ function getMetDepartments() {
   });
   deptXhr.send();
 }
-getMetDepartments();
 
 // Functions for searching and returning art objects
 
@@ -98,15 +124,13 @@ function metAcquireArt(objectId) {
       Set the index from the 0th item to the 1st item
       Call this function again with the new index
   Now send it and let's see what happens
-
 */
-var metSearchResults = {};
-var metArtObj = {};
+function getArtwork() {
 
-function getRandomArtwork() {
   var randDept = Math.floor(Math.random() * metDepts.length);
   // console.log('%cRandom department id: ', 'color: red', randDept);
-  var searchRequest = metSearch(randDept);
+  // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
+  var searchRequest = metSearch(metDepts[randDept].departmentId);
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
   // console.log('%cSearch request and searchResultsIdx instantiated', 'color: orange');
 
@@ -119,7 +143,7 @@ function getRandomArtwork() {
       return;
     } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
       // console.log('reached end of metSearchResults');
-      return;
+      getArtwork();
     }
 
     var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
@@ -132,21 +156,29 @@ function getRandomArtwork() {
     // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
     var acquireRequest = metAcquireArt(currentObjId);
     // acquireRequest.onload = function () {
-    acquireRequest.addEventListener('load', function () {
+    acquireRequest.addEventListener('load', function handleAcquireReponse() {
       metArtObj = acquireRequest.response;
       // Store the acquired object ID so we know we've seen it already
       data.shownObjectIds.push(metArtObj.objectID);
       if (metArtObj.primaryImage !== '') {
         // console.log('found artwork: ', metArtObj.primaryImage);
+        // Set image to this
+        var objectName = (metArtObj.objectName === '') ? 'Untitled' : metArtObj.objectName;
+        var artistName = (metArtObj.artistDisplayName === '') ? 'Unknown' : metArtObj.artistDisplayName;
+        var objectDate = (metArtObj.objectDate === '') ? 'Unknown Date' : String(metArtObj.objectDate);
+        var altString = objectName + ' by ' + artistName + ' (' + objectDate + ')';
+        $displayImage.setAttribute('src', metArtObj.primaryImageSmall);
+        $displayImage.setAttribute('alt', altString);
       } else {
-
         searchResultsIdx++;
         // console.log('did not find artwork, trying index ', searchResultsIdx);
         handleSearchResponse(); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
       }
+      acquireRequest.removeEventListener('load', handleAcquireReponse);
     });
     acquireRequest.send();
     // console.log('%cAcquire art request event listener set and request sent', 'color: purple');
+    searchRequest.removeEventListener('load', handleSearchResponse);
   }
 
   searchRequest.addEventListener('load', handleSearchResponse);
@@ -154,3 +186,11 @@ function getRandomArtwork() {
   searchRequest.send();
   // console.log('%cSearch request sent', 'green');
 }
+
+//           //
+// Execution //
+//           //
+
+// Get departments, assuming departments will not change in single session
+// but may change in the future.
+getMetDepartments();
