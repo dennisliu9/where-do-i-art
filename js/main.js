@@ -6,6 +6,10 @@ var metEndpoint = 'https://collectionapi.metmuseum.org/public/collection/v1/';
 var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
+var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
+var cacheItemsNum = 10;
+var displayArtObj = {};
+var nextArtObj = {};
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -25,18 +29,34 @@ $topLogo.addEventListener('click', function (event) {
 
 // Show Something button switches to selection view
 $showSomething.addEventListener('click', function (event) {
-  getArtwork();
+  // (future optimization point)
+  // When clicked, grab one and set it immediately
+  getArtwork(true); // passing true to isStart parameter
   swapView(event.target.dataset.viewLink);
+  // Then start building cache of images
+  for (var i = 1; i <= cacheItemsNum; i++) {
+    // console.log('building cache, item #: ', i);
+    getArtwork();
+  }
+  // console.log('%cFinished sending cache building requests', 'color: white; background-color: black; padding: 5px; border-radius: 5px;');
 });
 
 $dislikeButton.addEventListener('click', function (event) {
-  data.dislikedObjects.push(metArtObj);
+  // categorize displayed one as dislike
+  data.dislikedObjects.push(displayArtObj);
+  // retrieve the next from cache list
+  nextArtObj = artObjCache.shift();
+  // fetch another artwork to replace the missing one
   getArtwork();
+  // show the next object while the next artwork is being fetched
+  setImage(nextArtObj);
 });
 
 $likeButton.addEventListener('click', function (event) {
-  data.likedObjects.push(metArtObj);
+  data.likedObjects.push(displayArtObj);
+  nextArtObj = artObjCache.shift();
   getArtwork();
+  setImage(nextArtObj);
 });
 
 //           //
@@ -55,6 +75,52 @@ function swapView(dataView) {
   }
 }
 
+// Fisher–Yates shuffle, guide from https://bost.ocks.org/mike/shuffle/
+function shuffleArray(array) {
+  /*
+  Shuffles an array by creating a "front side of the deck" and a "back side of the deck."
+  Array begins with all items in the front and 0 in the back.
+  Item is picked randomly from the front of the deck (i).
+  This item is then swapped with the first item in the "back side"
+    Putting the first element into the "back side", our shuffled array begins
+  Now our "front side" is smaller by one element, and we pick another random item from this smaller "front"
+  Repeat the swapping process until we have removed everything from the front side and they are all in the back side
+    The back side is assembled by randomly picking, so we have a shuffled array!
+  (Number of values in the array could potentially be large, so I had to
+    outsource the sorting algorithm)
+
+  Create a copy of the array to work on
+  Create a variable to store the index of the end of the front size of the array
+    Assign it the length of the array to start out (It will be incremented down on first iteration, so it should be .length)
+  Create placeholder variable for the array item index that will be drawn
+  Create placeholder variable for the array item at the end of the front side that will be replaced
+  While iterating our place downwards from the end of the array to index 0
+    Get an index that can be anywhere from index 0 to the end of the front
+    Store the item at the last index of the front side of the array in a variable
+    Set the item at the last index of the front side of the array to the value at the picked index
+    Set the value at the picked index to the item that was at the end of the front side
+  return the array
+  */
+
+  var arrayCopy = array.slice();
+  var m = arrayCopy.length;
+  var i;
+  var t;
+
+  while (m > 0) {
+    // Pick from the front side of the array
+    i = Math.floor(Math.random() * m--);
+    // Item at the end of the front side will be replaced, so save it
+    t = arrayCopy[m];
+    // Put our picked item at the end of the front side
+    arrayCopy[m] = arrayCopy[i];
+    // We need to put the item from the end back in, put it where we got our picked item
+    arrayCopy[i] = t;
+  }
+
+  return arrayCopy;
+}
+
 //                                //
 // Metropolitan Museum of Art API //
 //                                //
@@ -64,8 +130,6 @@ function getMetDepartments() {
   deptXhr.open('GET', metEndpoint + 'departments');
   deptXhr.responseType = 'json';
   deptXhr.addEventListener('load', function (event) {
-    // console.log('deptXhr.status: ', deptXhr.status);
-    // console.log('deptXhr.response: ', deptXhr.response);
     metDepts = deptXhr.response.departments;
   });
   deptXhr.send();
@@ -84,7 +148,6 @@ function metSearch(deptId, query) {
   } else {
     getUrl = metEndpoint + 'objects?departmentIds=' + deptId;
   }
-  // console.log('search URL: ', getUrl);
   var searchXhr = new XMLHttpRequest();
   searchXhr.open('GET', getUrl);
   searchXhr.responseType = 'json';
@@ -125,30 +188,32 @@ function metAcquireArt(objectId) {
       Call this function again with the new index
   Now send it and let's see what happens
 */
-function getArtwork() {
+function getArtwork(isStart) {
+  // This function gets artwork and puts it into the artObjCache if it has an accessible URL
+  if (artObjCache.length >= cacheItemsNum) {
+    // Don't keep sending requests if the cache is full, prevent button spamming to abuse API
+    return;
+  }
 
   var randDept = Math.floor(Math.random() * metDepts.length);
-  // console.log('%cRandom department id: ', 'color: red', randDept);
   // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
   var searchRequest = metSearch(metDepts[randDept].departmentId);
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
-  // console.log('%cSearch request and searchResultsIdx instantiated', 'color: orange');
 
   function handleSearchResponse() {
-    // console.log('%cSearch has loaded', 'color: blue');
     metSearchResults = searchRequest.response;
-    // console.log('%cmetSearchResults: ', 'color: blue', metSearchResults);
+    metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
     if (metSearchResults.objectIDs === null) {
-      // console.log('no results returned from query');
+      // if results were bad, exit for now
       return;
     } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
-      // console.log('reached end of metSearchResults');
+      // if we exhausted the list of id's, pull again
       getArtwork();
     }
 
     var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
+    // if this artwork been shown already, skip it
     while (data.shownObjectIds.includes(currentObjId)) {
-      // if it's in there, check the next one
       searchResultsIdx++;
       currentObjId = metSearchResults.objectIDs[searchResultsIdx];
     }
@@ -157,34 +222,41 @@ function getArtwork() {
     var acquireRequest = metAcquireArt(currentObjId);
     // acquireRequest.onload = function () {
     acquireRequest.addEventListener('load', function handleAcquireReponse() {
+      // console.log('target', currentObjId, ' acquired');
       metArtObj = acquireRequest.response;
       // Store the acquired object ID so we know we've seen it already
       data.shownObjectIds.push(metArtObj.objectID);
       if (metArtObj.primaryImage !== '') {
-        // console.log('found artwork: ', metArtObj.primaryImage);
-        // Set image to this
-        var objectName = (metArtObj.objectName === '') ? 'Untitled' : metArtObj.objectName;
-        var artistName = (metArtObj.artistDisplayName === '') ? 'Unknown' : metArtObj.artistDisplayName;
-        var objectDate = (metArtObj.objectDate === '') ? 'Unknown Date' : String(metArtObj.objectDate);
-        var altString = objectName + ' by ' + artistName + ' (' + objectDate + ')';
-        $displayImage.setAttribute('src', metArtObj.primaryImageSmall);
-        $displayImage.setAttribute('alt', altString);
+        // console.log('found valid artwork for target', currentObjId, ': ', metArtObj.primaryImage);
+        if (isStart) {
+          // If this is the first time running, go straight to showing it rather than caching it
+          setImage(metArtObj);
+        } else {
+          // console.log('%cTarget pushed to cache!', 'color: white; background-color: green; padding: 5px; border-radius: 5px;');
+          artObjCache.push(metArtObj);
+        }
       } else {
         searchResultsIdx++;
-        // console.log('did not find artwork, trying index ', searchResultsIdx);
         handleSearchResponse(); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
       }
       acquireRequest.removeEventListener('load', handleAcquireReponse);
     });
     acquireRequest.send();
-    // console.log('%cAcquire art request event listener set and request sent', 'color: purple');
     searchRequest.removeEventListener('load', handleSearchResponse);
   }
 
   searchRequest.addEventListener('load', handleSearchResponse);
-  // console.log('%cSearch event listener added', 'color: yellow; background-color: black');
   searchRequest.send();
-  // console.log('%cSearch request sent', 'green');
+}
+
+function setImage(artObj) {
+  displayArtObj = artObj;
+  var objectName = (artObj.objectName === '') ? 'Untitled' : artObj.objectName;
+  var artistName = (artObj.artistDisplayName === '') ? 'Unknown' : artObj.artistDisplayName;
+  var objectDate = (artObj.objectDate === '') ? 'Unknown Date' : String(artObj.objectDate);
+  var altString = objectName + ' by ' + artistName + ' (' + objectDate + ')';
+  $displayImage.setAttribute('src', artObj.primaryImageSmall);
+  $displayImage.setAttribute('alt', altString);
 }
 
 //           //
