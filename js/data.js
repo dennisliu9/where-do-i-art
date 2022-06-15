@@ -1,3 +1,7 @@
 /* exported data */
 
-var data = {};
+var data = {
+  shownObjectIds: [],
+  likedObjects: [],
+  dislikedObjects: []
+};

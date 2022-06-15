@@ -75,51 +75,6 @@ function metAcquireArt(objectId) {
   return acquireXhr;
 }
 
-// starts here
-var metSearchResults = {};
-var metArtObj = {};
-
-function getRandomArtwork() {
-  var randDept = Math.floor(Math.random() * metDepts.length);
-  // console.log('%cRandom department id: ', 'color: red', randDept);
-  var searchRequest = metSearch(randDept);
-  var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
-  // console.log('%cSearch request and searchResultsIdx instantiated', 'color: orange');
-
-  function handleSearchResponse() {
-    // console.log('%cSearch has loaded', 'color: blue');
-    metSearchResults = searchRequest.response;
-    // console.log('%cmetSearchResults: ', 'color: blue', metSearchResults);
-    if (metSearchResults.objectIDs === null) {
-      // console.log('no results returned from query');
-      return;
-    } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
-      // console.log('reached end of metSearchResults');
-      return;
-    }
-
-    var acquireRequest = metAcquireArt(metSearchResults.objectIDs[searchResultsIdx]);
-    // acquireRequest.onload = function () {
-    acquireRequest.addEventListener('load', function () {
-      metArtObj = acquireRequest.response;
-      if (metArtObj.primaryImage !== '') {
-        // console.log('found artwork: ', metArtObj.primaryImage);
-      } else {
-        searchResultsIdx++;
-        // console.log('did not find artwork, trying index ', searchResultsIdx);
-        handleSearchResponse(); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
-      }
-    });
-    acquireRequest.send();
-    // console.log('%cAcquire art request event listener set and request sent', 'color: purple');
-  }
-
-  searchRequest.addEventListener('load', handleSearchResponse);
-  // console.log('%cSearch event listener added', 'color: yellow; background-color: black');
-  searchRequest.send();
-  // console.log('%cSearch request sent', 'green');
-}
-
 /* Acquiring art from an array of objectIds
   > note: assuming that an entire department will always have at least one object with an accessible image
     aka, we will never reach the end of the objectIDs array
@@ -144,4 +99,58 @@ function getRandomArtwork() {
       Call this function again with the new index
   Now send it and let's see what happens
 
-  */
+*/
+var metSearchResults = {};
+var metArtObj = {};
+
+function getRandomArtwork() {
+  var randDept = Math.floor(Math.random() * metDepts.length);
+  // console.log('%cRandom department id: ', 'color: red', randDept);
+  var searchRequest = metSearch(randDept);
+  var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
+  // console.log('%cSearch request and searchResultsIdx instantiated', 'color: orange');
+
+  function handleSearchResponse() {
+    // console.log('%cSearch has loaded', 'color: blue');
+    metSearchResults = searchRequest.response;
+    // console.log('%cmetSearchResults: ', 'color: blue', metSearchResults);
+    if (metSearchResults.objectIDs === null) {
+      // console.log('no results returned from query');
+      return;
+    } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
+      // console.log('reached end of metSearchResults');
+      return;
+    }
+
+    var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
+    while (data.shownObjectIds.includes(currentObjId)) {
+      // if it's in there, check the next one
+      searchResultsIdx++;
+      currentObjId = metSearchResults.objectIDs[searchResultsIdx];
+    }
+
+    // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
+    var acquireRequest = metAcquireArt(currentObjId);
+    // acquireRequest.onload = function () {
+    acquireRequest.addEventListener('load', function () {
+      metArtObj = acquireRequest.response;
+      // Store the acquired object ID so we know we've seen it already
+      data.shownObjectIds.push(metArtObj.objectID);
+      if (metArtObj.primaryImage !== '') {
+        // console.log('found artwork: ', metArtObj.primaryImage);
+      } else {
+
+        searchResultsIdx++;
+        // console.log('did not find artwork, trying index ', searchResultsIdx);
+        handleSearchResponse(); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
+      }
+    });
+    acquireRequest.send();
+    // console.log('%cAcquire art request event listener set and request sent', 'color: purple');
+  }
+
+  searchRequest.addEventListener('load', handleSearchResponse);
+  // console.log('%cSearch event listener added', 'color: yellow; background-color: black');
+  searchRequest.send();
+  // console.log('%cSearch request sent', 'green');
+}
