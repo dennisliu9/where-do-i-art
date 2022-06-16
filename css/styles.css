@@ -155,10 +155,10 @@ h5 {
   background-image:
     linear-gradient(
       25deg,
-      rgba(223, 14, 98, 1) 9%,
-      rgba(250, 199, 11, 1) 39%,
-      rgba(18, 118, 129, 1) 81%,
-      rgba(33, 23, 74, 1) 100%
+      rgba(255, 189, 53, 1) 9%,
+      rgba(63, 167, 150, 1) 39%,
+      rgba(130, 103, 190, 1) 81%,
+      rgba(80, 32, 100, 1) 100%
     );
   color: var(--color-black);
   /* stylelint-disable-next-line property-no-vendor-prefix */
