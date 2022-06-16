@@ -1,0 +1,36 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.row {
+  display: flex;
+}
+
+.col-full {
+  width: 100%;
+}
+
+.flex-col {
+  display: flex;
+}
+
+.jc-center {
+  justify-content: center;
+}
+
+.jc-space-even {
+  justify-content: space-evenly;
+}
+
+.ai-center {
+  align-items: center;
+}
+
+.flex-wrap-on {
+  flex-wrap: wrap;
+}
+
+.text-center {
+  text-align: center;
+}

@@ -1,0 +1,333 @@
+/*
+Font size guide
+h1: 48px (Poppins Semibold)
+h2/logo: 32px (Poppins Semibold)
+main buttons: 15px (Raleway Bold)
+landing chips: 14px (Raleway Regular)
+metadata chips: 12px (Raleway Regular
+h4/subheader: 24px (Poppins Bold)
+subtext: 24px (Poppins Semibold)
+icons (desktop): 30px
+small headline on metadata (h5): 18px (RalewayBold)
+*/
+
+:root {
+  --color-accent: #ff971d;
+  --color-light: #fff6de;
+  --color-no: #c01d25;
+  --color-yes: #b6ec4b;
+  --color-grey: #adadad;
+  --color-white: #fff;
+  --color-black: #000;
+}
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 32px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ff-headers {
+  font-family: Poppins, sans-serif;
+}
+
+.ff-main {
+  font-family: Raleway, sans-serif;
+}
+
+.fw-light {
+  font-weight: 300;
+}
+
+.fw-normal {
+  font-weight: 400;
+}
+
+.fw-semibold {
+  font-weight: 600;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.bg-color-accent {
+  background-color: var(--color-accent);
+}
+
+.color-white {
+  color: var(--color-white);
+}
+
+.drop-shadow {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14);
+}
+
+.margin-tb-3 {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+.margin-t-5 {
+  margin-top: 5rem;
+}
+
+.margin-l-20p {
+  margin-left: 10px;
+}
+
+.no-mobile {
+  display: initial;
+}
+
+/* non functional classes */
+
+.button-main {
+  text-decoration: none;
+  border: 3px var(--color-accent) solid;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  font-size: 15px;
+  font-weight: 700;
+  width: 271px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-main:hover {
+  filter: brightness(1.1) saturate(150%);
+}
+
+.button-main:active {
+  border: 3px var(--color-accent) solid;
+  background-color: var(--color-white);
+  color: var(--color-accent);
+}
+
+.chips-main {
+  font-size: 14px;
+}
+
+.img-main {
+  height: 424px;
+}
+
+.img-main img {
+  height: 100%;
+  max-width: 850px;
+  object-fit: contain;
+}
+
+/* Specific Element CSS rules */
+.icon::before {
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+#dislike-button {
+  border-color: var(--color-no);
+  background-color: var(--color-white);
+  color: var(--color-no);
+}
+
+#dislike-button:active {
+  border: 3px var(--color-no) solid;
+  background-color: var(--color-no);
+  color: var(--color-white);
+}
+
+#dislike-button::before {
+  font: var(--fa-font-solid);
+  content: "\f00d";
+
+  /*
+  f00d is X
+  f794 is dumpster fire
+  f2fe is poo
+  f7a9 is cracked heart
+  f165 is thumbs down
+
+  */
+}
+
+#like-button {
+  border-color: var(--color-yes);
+  background-color: var(--color-yes);
+  color: var(--color-white);
+}
+
+#like-button:active {
+  border: 3px var(--color-yes) solid;
+  background-color: var(--color-white);
+  color: var(--color-yes);
+}
+
+#like-button::before {
+  font: var(--fa-font-solid);
+  content: "\f00c";
+
+  /*
+  f00c is check
+  f1e2 is bomb
+  f004 is heart
+  f164 is thumbs up
+  */
+}
+
+@media only screen and (min-width: 851px) {
+  /* "Desktop" experience */
+
+  #top-logo:hover {
+    cursor: pointer;
+
+    /*
+    If webkit is not available in the browser, it's recommended to have a fallback.
+    https://stackoverflow.com/questions/15552082/css-rules-for-webkit-based-browsers
+    Here, I'm using webkit color and adding firefox support as well. If these fail, it
+    should fallback to just the default black color.
+    */
+    background-image:
+      linear-gradient(
+        25deg,
+        rgba(255, 189, 53, 1) 9%,
+        rgba(63, 167, 150, 1) 39%,
+        rgba(130, 103, 190, 1) 81%,
+        rgba(80, 32, 100, 1) 100%
+      );
+    color: var(--color-black);
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-background-clip: text;
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -moz-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -moz-text-fill-color: transparent;
+  }
+
+  /* Likely unnecessary, possibly for specific overrides */
+}
+
+@media only screen and (max-width: 850px) {
+  /* "Tablet" experience */
+
+  h1 {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .img-main {
+    height: 424px;
+  }
+
+  .img-main img {
+    height: 100%;
+    max-width: 100vw;
+    object-fit: contain;
+  }
+
+  #top-logo:active {
+    cursor: pointer;
+
+    /*
+      If webkit is not available in the browser, it's recommended to have a fallback.
+      https://stackoverflow.com/questions/15552082/css-rules-for-webkit-based-browsers
+      Here, I'm using webkit color and adding firefox support as well. If these fail, it
+      should fallback to just the default black color.
+      */
+    background-image:
+      linear-gradient(
+        25deg,
+        rgba(255, 189, 53, 1) 9%,
+        rgba(63, 167, 150, 1) 39%,
+        rgba(130, 103, 190, 1) 81%,
+        rgba(80, 32, 100, 1) 100%
+      );
+    color: var(--color-black);
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-background-clip: text;
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -moz-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -moz-text-fill-color: transparent;
+  }
+
+  #dislike-button,
+  #like-button {
+    width: 30vw;
+    min-width: 210px;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  /* "Phone" experience */
+
+  .no-mobile {
+    display: none;
+  }
+
+  h1 {
+    padding-left: 10px;
+    padding-right: 10px;
+    margin: 0;
+  }
+
+  .margin-t-5 {
+    margin-top: 4rem;
+  }
+
+  .margin-t-3-mobile {
+    margin-top: 3rem;
+  }
+
+  .button-main:hover {
+    /* Do not brighten on mobile, hover not always implemented */
+    filter: brightness(1);
+  }
+
+  .img-main {
+    height: 230px;
+  }
+
+  .img-main img {
+    height: 100%;
+    max-width: 330px;
+    object-fit: contain;
+  }
+
+  #dislike-button,
+  #like-button {
+    width: 120px;
+    height: 120px;
+    min-width: 120px;
+    border-radius: 50%;
+    padding: 1rem;
+  }
+
+  #dislike-button::before,
+  #like-button::before {
+    font-size: 40px;
+  }
+}
