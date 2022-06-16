@@ -29,6 +29,10 @@ small headline on metadata (h5): 18px (RalewayBold)
   visibility: hidden;
 }
 
+header {
+  height: 10vh;
+}
+
 h1 {
   font-size: 48px;
   font-weight: 600;
@@ -77,12 +81,29 @@ h5 {
   background-color: var(--color-accent);
 }
 
+.bg-color-white {
+  background-color: var(--color-white);
+}
+
 .color-white {
   color: var(--color-white);
 }
 
 .drop-shadow {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14);
+}
+
+.drop-shadow-up {
+  box-shadow: 0 -1px 2px 2px rgba(0, 0, 0, 0.1);
+}
+
+.light-round-border {
+  border: 1px solid var(--color-grey);
+  border-radius: 10px;
+}
+
+.light-bottom-border {
+  border-bottom: 1px solid var(--color-grey);
 }
 
 .margin-tb-3 {
@@ -96,6 +117,19 @@ h5 {
 
 .margin-l-20p {
   margin-left: 10px;
+}
+
+.pos-abs-full {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.top-level {
+  position: relative;
+  z-index: 6;
 }
 
 .no-mobile {
@@ -142,6 +176,12 @@ h5 {
 }
 
 /* Specific Element CSS rules */
+#bottom-sheet {
+  top: 10vh;
+  z-index: 1;
+  overflow-y: auto;
+}
+
 .icon::before {
   display: inline-block;
   text-rendering: auto;
@@ -330,4 +370,10 @@ h5 {
   #like-button::before {
     font-size: 40px;
   }
+}
+
+.test-class {
+  /* as long as top is set to the same height as the header, this will work */
+
+  /* background-color: rgba(66, 66, 66, 0.5); */
 }
