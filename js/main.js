@@ -38,7 +38,6 @@ $showSomething.addEventListener('click', function (event) {
     // console.log('building cache, item #: ', i);
     getArtwork();
   }
-  // console.log('%cFinished sending cache building requests', 'color: white; background-color: black; padding: 5px; border-radius: 5px;');
 });
 
 $dislikeButton.addEventListener('click', function (event) {
@@ -222,17 +221,14 @@ function getArtwork(isStart) {
     var acquireRequest = metAcquireArt(currentObjId);
     // acquireRequest.onload = function () {
     acquireRequest.addEventListener('load', function handleAcquireReponse() {
-      // console.log('target', currentObjId, ' acquired');
       metArtObj = acquireRequest.response;
       // Store the acquired object ID so we know we've seen it already
       data.shownObjectIds.push(metArtObj.objectID);
       if (metArtObj.primaryImage !== '') {
-        // console.log('found valid artwork for target', currentObjId, ': ', metArtObj.primaryImage);
         if (isStart) {
           // If this is the first time running, go straight to showing it rather than caching it
           setImage(metArtObj);
         } else {
-          // console.log('%cTarget pushed to cache!', 'color: white; background-color: green; padding: 5px; border-radius: 5px;');
           artObjCache.push(metArtObj);
         }
       } else {
@@ -244,7 +240,6 @@ function getArtwork(isStart) {
     acquireRequest.send();
     searchRequest.removeEventListener('load', handleSearchResponse);
   }
-
   searchRequest.addEventListener('load', handleSearchResponse);
   searchRequest.send();
 }

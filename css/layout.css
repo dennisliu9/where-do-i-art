@@ -19,6 +19,10 @@
   width: 25%;
 }
 
+.flex-col {
+  display: flex;
+}
+
 .jc-center {
   justify-content: center;
 }
