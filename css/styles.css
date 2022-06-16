@@ -133,18 +133,33 @@ h5 {
 #top-logo:hover {
   cursor: pointer;
 
-  /* Potential future feature: hover over color for logo */
+  /*
+  If webkit is not available in the browser, it's recommended to have a fallback.
+  https://stackoverflow.com/questions/15552082/css-rules-for-webkit-based-browsers
+  Here, I'm using webkit color and adding firefox support as well. If these fail, it
+  should fallback to just the default black color.
+  */
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(223, 14, 98, 1) 0%,
+      rgba(250, 199, 11, 1) 33%,
+      rgba(18, 118, 129, 1) 67%,
+      rgba(33, 23, 74, 1) 100%
+    );
+  color: var(--color-black);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-background-clip: text;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+}
 
-  /* background-image: linear-gradient(60deg, #e21143, #ffb03a);
-  background-clip: text;
-  color: transparent;
-  border-radius: 40px;
-  border-top-left-radius: 40px;
-  border-top-right-radius: 40px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-  padding-left: 1rem;
-  padding-right: 1rem; */
+.icon::before {
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
 }
 
 #dislike-button {
@@ -159,6 +174,20 @@ h5 {
   color: var(--color-white);
 }
 
+#dislike-button::before {
+  font: var(--fa-font-solid);
+  content: "\f794";
+
+  /*
+  f00d is X
+  f794 is dumpster fire
+  f2fe is poo
+  f7a9 is cracked heart
+  f165 is thumbs down
+
+  */
+}
+
 #like-button {
   border-color: var(--color-yes);
   background-color: var(--color-yes);
@@ -169,4 +198,27 @@ h5 {
   border: 3px var(--color-yes) solid;
   background-color: var(--color-white);
   color: var(--color-yes);
+}
+
+#like-button::before {
+  font: var(--fa-font-solid);
+  content: "\f1e2";
+
+  /*
+  f00c is check
+  f1e2 is bomb
+  f004 is heart
+  f164 is thumbs up
+  */
+}
+
+/* test cases for now */
+.no-mobile {
+  display: initial;
+}
+
+@media only screen and (max-width: 450px) {
+  .no-mobile {
+    display: none;
+  }
 }
