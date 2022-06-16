@@ -11,14 +11,6 @@
   width: 100%;
 }
 
-.col-1-2 {
-  width: 50%;
-}
-
-.col-1-4 {
-  width: 25%;
-}
-
 .flex-col {
   display: flex;
 }
