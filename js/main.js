@@ -163,84 +163,133 @@ function metAcquireArt(objectId) {
   return acquireXhr;
 }
 
-/* Acquiring art from an array of objectIds
-  > note: assuming that an entire department will always have at least one object with an accessible image
-    aka, we will never reach the end of the objectIDs array
-    This will **not** hold true when the results are more narrow
+function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest) {
+  /*
+  handleAcquireResponse:
+    (runs once acquireRequest has loaded)
+  Get the response and store it in metArtObj
+  Store the objectID in data.shownObjectIds to keep track of what has been checked already
+  Check if metArtObj has an image URL
+    Check if we're at the start (clicked button starting the selection, not a like/dislike)
+      If so,
+        Set the image to the URL
+      If we're not at the start
+        Push this object into the preload cache
+    If it doesn't have a URL
+      Increment the index (e.g. from the 0th item to the 1st item)
+      Call this function again with the new index
 
-  Outside function:
-    Instantiate an index i at 0
-  Function:
+  Variable sources:
+  acquireRequest - passed in from handleSearchResponse()
+  searchRequest - passed in from handleSearchResponse() from getArtwork()
+  searchResultsIdx - passed in from handleSearchResponse() from getArtwork()
+  isStart - passed in from handleSearchResponse() from getArtwork()
+  metArtObj - global
+  data - global
+  artObjCache - global
+  */
+  metArtObj = acquireRequest.response;
+  // Store the acquired object ID so we know we've seen it already
+  data.shownObjectIds.push(metArtObj.objectID);
+  if (metArtObj.primaryImage !== '') {
+    if (isStart) {
+      // If this is the first time running, go straight to showing it rather than caching it
+      setImage(metArtObj);
+    } else {
+      artObjCache.push(metArtObj);
+    }
+  } else {
+    searchResultsIdx++;
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
+  }
+}
 
+function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled) {
+  /*
+  handleSearchResponse:
+    (runs once searchRequest has loaded)
   Check that the index isn't >= objectIDs.length
     If it is, then we have reached the end of the array of objects
       return false, and handle the false outside
     If it isn't, then proceed
-  Set up a request for the 0th item in objectIDs
+  Check if the item at searchResultsIdx has already been shown before
+    If it has been shown, grab the next item in objectIDs and check again
+  Set up a request for the item at searchResultsIdx in objectIDs
   Here's what should happen when it's done loading
-    Get the response and store it in metArtObj
-    If it has an image URL
-      (In the future, save the info about the painting)
-      We're done, return the URL and exit
-    If it doesn't have a URL
-      Set the index from the 0th item to the 1st item
-      Call this function again with the new index
-  Now send it and let's see what happens
-*/
+    Call handleAcquireResponse
+  Now send the request and let's see what happens
+
+  Variable sources:
+  searchRequest - passed in from getArtwork()
+  searchResultsIdx - passed in from getArtwork()
+  isStart - pass in from getArtwork()
+  currentObjId - created in this function
+  acquireRequest - created in this function
+  metSearchResults - global
+  data - global
+  */
+
+  metSearchResults = searchRequest.response;
+  // Prevent reshuffling
+  if (areResultsShuffled === false) {
+    metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
+    areResultsShuffled = true;
+  }
+  if (metSearchResults.objectIDs === null) {
+    // if results were bad, exit for now
+    return;
+  } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
+    // if we exhausted the list of id's, pull again
+    getArtwork();
+  }
+
+  var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
+  // if this artwork been shown already, skip it
+  while (data.shownObjectIds.includes(currentObjId)) {
+    searchResultsIdx++;
+    currentObjId = metSearchResults.objectIDs[searchResultsIdx];
+  }
+
+  // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
+  var acquireRequest = metAcquireArt(currentObjId);
+  acquireRequest.addEventListener('load', function (event) {
+    handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest);
+  });
+  acquireRequest.send();
+}
+
 function getArtwork(isStart) {
-  // This function gets artwork and puts it into the artObjCache if it has an accessible URL
+  /*
+  getArtwork:
+    (runs when any of the three main buttons are clicked)
+  This function calls the functions that get artwork and put them into the artObjCache
+  if they have an accessible URL. When isStart=true, the artwork will be immediately displayed
+  and not put into artObjCache
+
+  > note: assuming that an entire department will always have at least one object with an accessible image
+    aka, we will never reach the end of the objectIDs array
+    This will **not** hold true when the results are more narrow
+
+  Check if the preload cache has enough objects
+    If so, don't run this
+  Get the index for a random department
+  Set up a search request for the random department
+  Instantiate an index i at 0 for going through the array of results
+  Set up a load event listener for the search results to handle the response when it arrives
+  Send the request
+  */
   if (artObjCache.length >= cacheItemsNum) {
     // Don't keep sending requests if the cache is full, prevent button spamming to abuse API
     return;
   }
-
   var randDept = Math.floor(Math.random() * metDepts.length);
   // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
   var searchRequest = metSearch(metDepts[randDept].departmentId);
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
-
-  function handleSearchResponse() {
-    metSearchResults = searchRequest.response;
-    metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
-    if (metSearchResults.objectIDs === null) {
-      // if results were bad, exit for now
-      return;
-    } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
-      // if we exhausted the list of id's, pull again
-      getArtwork();
-    }
-
-    var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
-    // if this artwork been shown already, skip it
-    while (data.shownObjectIds.includes(currentObjId)) {
-      searchResultsIdx++;
-      currentObjId = metSearchResults.objectIDs[searchResultsIdx];
-    }
-
-    // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
-    var acquireRequest = metAcquireArt(currentObjId);
-    // acquireRequest.onload = function () {
-    acquireRequest.addEventListener('load', function handleAcquireReponse() {
-      metArtObj = acquireRequest.response;
-      // Store the acquired object ID so we know we've seen it already
-      data.shownObjectIds.push(metArtObj.objectID);
-      if (metArtObj.primaryImage !== '') {
-        if (isStart) {
-          // If this is the first time running, go straight to showing it rather than caching it
-          setImage(metArtObj);
-        } else {
-          artObjCache.push(metArtObj);
-        }
-      } else {
-        searchResultsIdx++;
-        handleSearchResponse(); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
-      }
-      acquireRequest.removeEventListener('load', handleAcquireReponse);
-    });
-    acquireRequest.send();
-    searchRequest.removeEventListener('load', handleSearchResponse);
-  }
-  searchRequest.addEventListener('load', handleSearchResponse);
+  var areResultsShuffled = false;
+  searchRequest.addEventListener('load', function (event) {
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled);
+  });
   searchRequest.send();
 }
 
