@@ -105,7 +105,6 @@ h5 {
 /* non functional classes */
 
 .button-main {
-  /* display: inline-block; */
   text-decoration: none;
   border: 3px var(--color-accent) solid;
   border-radius: 50px;
