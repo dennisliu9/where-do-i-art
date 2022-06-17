@@ -187,6 +187,7 @@ function startup() {
     $showSomething.classList.add('bg-color-accent');
     $showSomething.classList.add('color-white');
     $showSomething.setAttribute('data-view-link', 'selection');
+    $showSomething.textContent = 'Show me something!';
     $showSomething.classList.remove('button-main-disabled');
 
     // Pull first image to be shown immediately
