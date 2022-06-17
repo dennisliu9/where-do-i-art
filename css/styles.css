@@ -16,7 +16,7 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-light: #fff6de;
   --color-no: #c01d25;
   --color-yes: #b6ec4b;
-  --color-grey: #adadad;
+  --color-grey: #afafaf;
   --color-white: #fff;
   --color-black: #000;
   --header-height: 64px;
@@ -28,6 +28,10 @@ small headline on metadata (h5): 18px (RalewayBold)
 
 .invisible {
   visibility: hidden;
+}
+
+.no-scroll {
+  overflow: hidden;
 }
 
 header {
@@ -193,11 +197,16 @@ h5 {
   object-fit: contain;
 }
 
+.minimized {
+  transform: translateY(calc((100vh - (var(--header-height) + 91px))));
+}
+
 /* Specific Element CSS rules */
 #bottom-sheet {
   top: calc(100vh - (100vh - var(--header-height))); /* up to header height */
   z-index: 1;
   overflow-y: auto;
+  transition: transform 300ms ease 0ms;
 }
 
 .icon::before {
@@ -255,6 +264,13 @@ h5 {
   f164 is thumbs up
   */
 }
+
+.subheader-spacing {
+  margin-top: 28px;
+  margin-bottom: 28px;
+}
+
+/* Media Queries */
 
 @media only screen and (min-width: 851px) {
   /* "Desktop" experience */
@@ -385,5 +401,14 @@ h5 {
   #dislike-button::before,
   #like-button::before {
     font-size: 40px;
+  }
+
+  .subheader-spacing {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .minimized {
+    transform: translateY(calc((100vh - (var(--header-height) + 67px))));
   }
 }

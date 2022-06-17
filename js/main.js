@@ -17,6 +17,8 @@ var $showSomething = document.querySelector('#show-something');
 var $displayImage = document.querySelector('#display-image');
 var $dislikeButton = document.querySelector('#dislike-button');
 var $likeButton = document.querySelector('#like-button');
+var $bottomSheet = document.querySelector('#bottom-sheet');
+var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 
 //                                            //
@@ -59,6 +61,12 @@ $likeButton.addEventListener('click', function (event) {
   nextArtObj = artObjCache.shift();
   getArtwork();
   setImage(nextArtObj);
+});
+
+$bottomSheetHeader.addEventListener('click', function (event) {
+  $bottomSheet.classList.toggle('light-round-border');
+  $bottomSheet.classList.toggle('drop-shadow-up');
+  $bottomSheet.classList.toggle('minimized');
 });
 
 //           //
