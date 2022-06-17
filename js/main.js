@@ -13,16 +13,19 @@ var nextArtObj = {};
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
+
 var $showSomething = document.querySelector('#show-something');
 var $displayImage = document.querySelector('#display-image');
 var $dislikeButton = document.querySelector('#dislike-button');
 var $likeButton = document.querySelector('#like-button');
+
 var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
 var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
 var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
+
 var $detailModalContainer = document.querySelector('#detail-container');
 var $detailModalImage = document.querySelector('#detail-image');
 
@@ -37,6 +40,9 @@ $topLogo.addEventListener('click', function (event) {
 
 // Show Something button switches to selection view
 $showSomething.addEventListener('click', function (event) {
+  if ($showSomething.classList.contains('button-main-disabled')) {
+    return;
+  }
   // (future optimization point)
   // When clicked, grab one and set it immediately
   swapView(event.target.dataset.viewLink);
@@ -157,16 +163,42 @@ function shuffleArray(array) {
 // Metropolitan Museum of Art API //
 //                                //
 
+function startup() {
+
+  // Render Liked images into gallery
+  renderAllLiked();
+
+  // Get departments, assuming departments will not change in single session
+  // (but may change in the future)
+
+  // Potential optimization point: Use Met Departments from localStorage if available
+  var getMetDeptsRequest = getMetDepartments();
+  getMetDeptsRequest.addEventListener('load', function (event) {
+    // Save retrieved departments
+    metDepts = getMetDeptsRequest.response.departments;
+
+    // Enables start button
+    $showSomething.classList.add('button-main');
+    $showSomething.classList.add('bg-color-accent');
+    $showSomething.classList.add('color-white');
+    $showSomething.setAttribute('data-view-link', 'selection');
+    $showSomething.classList.remove('button-main-disabled');
+
+    // Pull first image to be shown immediately
+    getArtwork(true);
+  });
+  getMetDeptsRequest.send();
+}
+
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
   deptXhr.open('GET', metEndpoint + 'departments');
   deptXhr.responseType = 'json';
-  deptXhr.addEventListener('load', function (event) {
-    metDepts = deptXhr.response.departments;
-    // Pull first image to be shown immediately
-    getArtwork(true);
-  });
-  deptXhr.send();
+  // deptXhr.addEventListener('load', function (event) {
+  //   metDepts = deptXhr.response.departments;
+  // });
+  // deptXhr.send();
+  return deptXhr;
 }
 
 // Functions for searching and returning art objects
@@ -418,9 +450,4 @@ function handleImageClick(event) {
 // Execution //
 //           //
 
-// Get departments, assuming departments will not change in single session
-// but may change in the future.
-renderAllLiked();
-
-// Potential optimization point: Use Met Departments from localStorage if available
-getMetDepartments(); // Calls getArtwork(true), to start loading the first image on startup
+startup();

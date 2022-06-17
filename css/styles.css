@@ -16,6 +16,7 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-light: #fff6de;
   --color-no: #c01d25;
   --color-yes: #b6ec4b;
+  --color-light-grey: #efefef;
   --color-grey: #afafaf;
   --color-grey-05alpha: rgba(175, 175, 175, 0.5);
   --color-dark-grey: #484847;
@@ -156,6 +157,21 @@ h5 {
 
 .override-height-64 {
   height: var(--header-height);
+}
+
+.button-main-disabled {
+  text-decoration: none;
+  background-color: var(--color-light-grey);
+  color: var(--color-grey);
+  border: 3px var(--color-light-grey) solid;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  font-size: 15px;
+  font-weight: 700;
+  width: 271px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button-main {
