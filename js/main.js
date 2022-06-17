@@ -66,13 +66,21 @@ $likeButton.addEventListener('click', function (event) {
 });
 
 $bottomSheetHeader.addEventListener('click', function (event) {
-  $bottomSheet.classList.toggle('light-round-border');
-  $bottomSheet.classList.toggle('drop-shadow-up');
-  $bottomSheet.classList.toggle('minimized');
-  $bottomSheet.classList.toggle('no-scroll');
-  $bottomSheet.classList.toggle('inner-scroll');
-  $bottomSheetCloseButton.classList.toggle('invisible');
-
+  if (event.target.tagName === 'SPAN' && event.target.textContent === 'close') {
+    $bottomSheet.classList.add('light-round-border');
+    $bottomSheet.classList.add('drop-shadow-up');
+    $bottomSheet.classList.add('minimized');
+    $bottomSheet.classList.add('no-scroll');
+    $bottomSheet.classList.remove('inner-scroll');
+    $bottomSheetCloseButton.classList.add('invisible');
+  } else {
+    $bottomSheet.classList.remove('light-round-border');
+    $bottomSheet.classList.remove('drop-shadow-up');
+    $bottomSheet.classList.remove('minimized');
+    $bottomSheet.classList.remove('no-scroll');
+    $bottomSheet.classList.add('inner-scroll');
+    $bottomSheetCloseButton.classList.remove('invisible');
+  }
 });
 
 //           //
