@@ -51,6 +51,32 @@
   flex-wrap: wrap;
 }
 
+.pos-abs-full {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.pos-fixed-full {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.z-level-6 {
+  position: relative;
+  z-index: 6;
+}
+
+.z-level-5 {
+  position: relative;
+  z-index: 5;
+}
+
 .text-center {
   text-align: center;
 }
