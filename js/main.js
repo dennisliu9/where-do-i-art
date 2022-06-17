@@ -37,7 +37,6 @@ $topLogo.addEventListener('click', function (event) {
 $showSomething.addEventListener('click', function (event) {
   // (future optimization point)
   // When clicked, grab one and set it immediately
-  getArtwork(true); // passing true to isStart parameter
   swapView(event.target.dataset.viewLink);
   // Then start building cache of images
   for (var i = 1; i <= cacheItemsNum; i++) {
@@ -161,6 +160,8 @@ function getMetDepartments() {
   deptXhr.responseType = 'json';
   deptXhr.addEventListener('load', function (event) {
     metDepts = deptXhr.response.departments;
+    // Test here
+    getArtwork(true);
   });
   deptXhr.send();
 }
@@ -382,4 +383,6 @@ function renderAllLiked() {
 // Get departments, assuming departments will not change in single session
 // but may change in the future.
 renderAllLiked();
-getMetDepartments();
+
+// Potential optimization point: Use Met Departments from localStorage if available
+getMetDepartments(); // Calls getArtwork(true), to start loading the first image on startup
