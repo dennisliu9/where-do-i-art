@@ -67,6 +67,9 @@ $bottomSheetHeader.addEventListener('click', function (event) {
   $bottomSheet.classList.toggle('light-round-border');
   $bottomSheet.classList.toggle('drop-shadow-up');
   $bottomSheet.classList.toggle('minimized');
+  $bottomSheet.classList.toggle('no-scroll');
+  $bottomSheet.classList.toggle('inner-scroll');
+
 });
 
 //           //

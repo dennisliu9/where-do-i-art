@@ -17,6 +17,7 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-no: #c01d25;
   --color-yes: #b6ec4b;
   --color-grey: #afafaf;
+  --color-grey-05talpha: rgba(175, 175, 175, 0.5);
   --color-white: #fff;
   --color-black: #000;
   --header-height: 64px;
@@ -34,8 +35,8 @@ small headline on metadata (h5): 18px (RalewayBold)
   overflow: hidden;
 }
 
-header {
-  /* height: 10vh; */
+.inner-scroll {
+  overflow-y: auto;
 }
 
 h1 {
@@ -205,8 +206,22 @@ h5 {
 #bottom-sheet {
   top: calc(100vh - (100vh - var(--header-height))); /* up to header height */
   z-index: 1;
-  overflow-y: auto;
   transition: transform 300ms ease 0ms;
+}
+
+#bottom-sheet::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: transparent;
+}
+
+#bottom-sheet::-webkit-scrollbar {
+  width: 12px;
+  background-color: transparent;
+}
+
+#bottom-sheet::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: var(--color-grey-05talpha);
 }
 
 .icon::before {
