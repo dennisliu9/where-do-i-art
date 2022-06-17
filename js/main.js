@@ -20,6 +20,7 @@ var $likeButton = document.querySelector('#like-button');
 var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
+var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
 
 //                                            //
 // event listeners (that aren't in functions) //
@@ -70,6 +71,7 @@ $bottomSheetHeader.addEventListener('click', function (event) {
   $bottomSheet.classList.toggle('minimized');
   $bottomSheet.classList.toggle('no-scroll');
   $bottomSheet.classList.toggle('inner-scroll');
+  $bottomSheetCloseButton.classList.toggle('invisible');
 
 });
 

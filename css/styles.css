@@ -85,6 +85,10 @@ h5 {
   font-weight: 700;
 }
 
+.fs-30 {
+  font-size: 30px;
+}
+
 .bg-color-accent {
   background-color: var(--color-accent);
 }
@@ -124,7 +128,11 @@ h5 {
 }
 
 .margin-l-20p {
-  margin-left: 10px;
+  margin-left: 20px;
+}
+
+.margin-r-20p {
+  margin-right: 20px;
 }
 
 .pos-abs-full {
@@ -245,6 +253,10 @@ h5 {
   transition-delay: 0s;
   transition-timing-function: ease-out;
   color: var(--color-accent);
+}
+
+#bottom-sheet-close-button:hover {
+  cursor: pointer;
 }
 
 .icon::before {
