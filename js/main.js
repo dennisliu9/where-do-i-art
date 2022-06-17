@@ -23,6 +23,8 @@ var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
 var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
 var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
+var $detailModalContainer = document.querySelector('#detail-container');
+var $detailModalImage = document.querySelector('#detail-image');
 
 //                                            //
 // event listeners (that aren't in functions) //
@@ -40,7 +42,6 @@ $showSomething.addEventListener('click', function (event) {
   swapView(event.target.dataset.viewLink);
   // Then start building cache of images
   for (var i = 1; i <= cacheItemsNum; i++) {
-    // console.log('building cache, item #: ', i);
     getArtwork();
   }
 });
@@ -87,6 +88,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheetExpandButton.textContent = 'expand_more';
   }
 });
+
+window.addEventListener('click', handleImageClick);
 
 //           //
 // functions //
@@ -160,7 +163,7 @@ function getMetDepartments() {
   deptXhr.responseType = 'json';
   deptXhr.addEventListener('load', function (event) {
     metDepts = deptXhr.response.departments;
-    // Test here
+    // Pull first image to be shown immediately
     getArtwork(true);
   });
   deptXhr.send();
@@ -262,14 +265,14 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   */
 
   metSearchResults = searchRequest.response;
-  // Prevent reshuffling
+  // Prevent extraneous reshuffling
   if (areResultsShuffled === false) {
     metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
     areResultsShuffled = true;
   }
   if (metSearchResults.objectIDs === null) {
     // if results were bad, exit for now
-    return;
+    return 'Error: metSearchResults.objectIDs was null';
   } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
     // if we exhausted the list of id's, pull again
     getArtwork();
@@ -325,19 +328,24 @@ function getArtwork(isStart) {
   searchRequest.send();
 }
 
-function addImageToImg(artObj, $img) {
+function addImageToImg(artObj, $img, requestFullSize) {
   // Note: Modifies the passed in $img
-
   var objectName = (artObj.objectName === '') ? 'Untitled' : artObj.objectName;
   var artistName = (artObj.artistDisplayName === '') ? 'Unknown' : artObj.artistDisplayName;
   var objectDate = (artObj.objectDate === '') ? 'Unknown Date' : String(artObj.objectDate);
   var altString = objectName + ' by ' + artistName + ' (' + objectDate + ')';
 
-  $img.setAttribute('src', artObj.primaryImageSmall);
+  if (requestFullSize) {
+    $img.setAttribute('src', artObj.primaryImage);
+  } else {
+    $img.setAttribute('src', artObj.primaryImageSmall);
+  }
   $img.setAttribute('alt', altString);
+  $img.setAttribute('objectId', artObj.objectID);
 }
 
 function setImage(artObj) {
+  // displayArtObj holds the data for the image being decided on
   displayArtObj = artObj;
   addImageToImg(artObj, $displayImage);
 }
@@ -373,6 +381,36 @@ function renderAllLiked() {
   for (var i = 0; i < data.likedObjects.length; i++) {
     var $imageContainer = renderImage(data.likedObjects[i]);
     appendImageToGallery($imageContainer, $bottomSheetGallery);
+  }
+}
+
+function handleImageClick(event) {
+  if (event.target.tagName === 'IMG' && event.target.id !== 'detail-image') {
+    // Image was clicked, now see it in detail
+
+    // find image object of image that was clicked and put it in viewingInDetail
+    if (event.target.id === 'display-image') {
+      data.viewingInDetail = displayArtObj;
+    } else {
+      for (var i = 0; i < data.likedObjects.length; i++) {
+        if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
+          data.viewingInDetail = data.likedObjects[i];
+        }
+      }
+    }
+
+    // Point detail img to the image url
+    // Setting requestFullSize to false for now, images are VERY large
+    addImageToImg(data.viewingInDetail, $detailModalImage, false);
+    $detailModalContainer.classList.remove('hidden');
+  } else if (event.target.id === 'detail-overlay') {
+    // Outside of detail image was clicked, close the detail modal
+    $detailModalContainer.classList.add('hidden');
+    data.viewingInDetail = null;
+  } else if (event.target.id === 'detail-image') {
+    // Detail image was click, open the full res in a new window/tab
+
+    this.window.open(data.viewingInDetail.primaryImage, '_blank');
   }
 }
 

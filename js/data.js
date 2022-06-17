@@ -5,7 +5,8 @@ var devLocalStorageOverrideFlag = false;
 var data = {
   shownObjectIds: [],
   likedObjects: [],
-  dislikedObjects: []
+  dislikedObjects: [],
+  viewingInDetail: null
 };
 
 if (localStorage.getItem(localStorageKey) !== null) {
