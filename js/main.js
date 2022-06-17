@@ -20,7 +20,9 @@ var $likeButton = document.querySelector('#like-button');
 var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
+var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
 var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
+var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
 
 //                                            //
 // event listeners (that aren't in functions) //
@@ -66,20 +68,24 @@ $likeButton.addEventListener('click', function (event) {
 });
 
 $bottomSheetHeader.addEventListener('click', function (event) {
-  if (event.target.tagName === 'SPAN' && event.target.textContent === 'close') {
+  if (event.target.tagName === 'SPAN' && ['close', 'expand_more'].includes(event.target.textContent)) {
+    // close bottom sheet
     $bottomSheet.classList.add('light-round-border');
     $bottomSheet.classList.add('drop-shadow-up');
     $bottomSheet.classList.add('minimized');
     $bottomSheet.classList.add('no-scroll');
     $bottomSheet.classList.remove('inner-scroll');
     $bottomSheetCloseButton.classList.add('invisible');
+    $bottomSheetExpandButton.textContent = 'expand_less';
   } else {
+    // open bottom sheet
     $bottomSheet.classList.remove('light-round-border');
     $bottomSheet.classList.remove('drop-shadow-up');
     $bottomSheet.classList.remove('minimized');
     $bottomSheet.classList.remove('no-scroll');
     $bottomSheet.classList.add('inner-scroll');
     $bottomSheetCloseButton.classList.remove('invisible');
+    $bottomSheetExpandButton.textContent = 'expand_more';
   }
 });
 
@@ -346,9 +352,9 @@ function renderImage(artObj) {
   $imageContainer.appendChild($image);
 
   // light up gallery text
-  $bottomSheetHeader.classList.add('color-flash');
+  $bottomSheetHeaderText.classList.add('color-flash');
   setTimeout(function () {
-    $bottomSheetHeader.classList.remove('color-flash');
+    $bottomSheetHeaderText.classList.remove('color-flash');
   }, 250);
 
   return $imageContainer;

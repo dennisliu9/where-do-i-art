@@ -195,6 +195,16 @@ h5 {
   object-fit: contain;
 }
 
+.icon-button {
+  color: var(--color-grey);
+
+  /* height: 30px; */
+}
+
+.icon-button:hover {
+  cursor: pointer;
+}
+
 .img-gallery-container {
   height: 280px;
   padding: 12px 50px;
@@ -241,11 +251,11 @@ h5 {
   background-color: var(--color-dark-grey-03alpha);
 }
 
-#bottom-sheet-header {
+#bottom-sheet-header-text {
   transition: text-shadow 250ms 300ms ease-out, color 250ms 300ms ease-out;
 }
 
-#bottom-sheet-header.color-flash {
+#bottom-sheet-header-text.color-flash {
   text-shadow:
     rgb(255, 237, 89) 0 0 12px,
     rgb(255, 237, 89) 0 0 18px,
@@ -253,10 +263,6 @@ h5 {
   transition-delay: 0s;
   transition-timing-function: ease-out;
   color: var(--color-accent);
-}
-
-#bottom-sheet-close-button:hover {
-  cursor: pointer;
 }
 
 .icon::before {

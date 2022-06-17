@@ -35,8 +35,16 @@
   justify-content: space-between;
 }
 
+.jc-fend {
+  justify-content: flex-end;
+}
+
 .ai-center {
   align-items: center;
+}
+
+.ai-fstart {
+  align-items: flex-start;
 }
 
 .flex-wrap-on {
