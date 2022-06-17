@@ -19,9 +19,9 @@ var $dislikeButton = document.querySelector('#dislike-button');
 var $likeButton = document.querySelector('#like-button');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 
-//                 //
-// event listeners //
-//                 //
+//                                            //
+// event listeners (that aren't in functions) //
+//                                            //
 
 // Logo text switches to landing view
 $topLogo.addEventListener('click', function (event) {
@@ -42,6 +42,7 @@ $showSomething.addEventListener('click', function (event) {
 });
 
 $dislikeButton.addEventListener('click', function (event) {
+  event.preventDefault();
   // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
   // retrieve the next from cache list
@@ -53,6 +54,7 @@ $dislikeButton.addEventListener('click', function (event) {
 });
 
 $likeButton.addEventListener('click', function (event) {
+  event.preventDefault();
   data.likedObjects.push(displayArtObj);
   nextArtObj = artObjCache.shift();
   getArtwork();
