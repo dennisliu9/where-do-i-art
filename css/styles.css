@@ -17,7 +17,9 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-no: #c01d25;
   --color-yes: #b6ec4b;
   --color-grey: #afafaf;
-  --color-grey-05talpha: rgba(175, 175, 175, 0.5);
+  --color-grey-05alpha: rgba(175, 175, 175, 0.5);
+  --color-dark-grey: #484847;
+  --color-dark-grey-03alpha: rgba(48, 48, 47, 0.3);
   --color-white: #fff;
   --color-black: #000;
   --header-height: 64px;
@@ -221,7 +223,14 @@ h5 {
 
 #bottom-sheet::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background-color: var(--color-grey-05talpha);
+  background-color: var(--color-grey);
+  background-color: var(--color-grey-05alpha);
+}
+
+#bottom-sheet::-webkit-scrollbar-thumb:active {
+  border-radius: 10px;
+  background-color: var(--color-dark-grey);
+  background-color: var(--color-dark-grey-03alpha);
 }
 
 .icon::before {
