@@ -17,6 +17,7 @@ var $showSomething = document.querySelector('#show-something');
 var $displayImage = document.querySelector('#display-image');
 var $dislikeButton = document.querySelector('#dislike-button');
 var $likeButton = document.querySelector('#like-button');
+var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 
 //                 //
 // event listeners //
@@ -293,14 +294,49 @@ function getArtwork(isStart) {
   searchRequest.send();
 }
 
-function setImage(artObj) {
-  displayArtObj = artObj;
+function addImageToImg(artObj, $img) {
+  // Note: Modifies the passed in $img
+
   var objectName = (artObj.objectName === '') ? 'Untitled' : artObj.objectName;
   var artistName = (artObj.artistDisplayName === '') ? 'Unknown' : artObj.artistDisplayName;
   var objectDate = (artObj.objectDate === '') ? 'Unknown Date' : String(artObj.objectDate);
   var altString = objectName + ' by ' + artistName + ' (' + objectDate + ')';
-  $displayImage.setAttribute('src', artObj.primaryImageSmall);
-  $displayImage.setAttribute('alt', altString);
+
+  $img.setAttribute('src', artObj.primaryImageSmall);
+  $img.setAttribute('alt', altString);
+}
+
+function setImage(artObj) {
+  displayArtObj = artObj;
+  addImageToImg(artObj, $displayImage);
+}
+
+function renderImage(artObj) {
+  var $imageContainer = document.createElement('div');
+  $imageContainer.className = 'img-gallery-container col-1-3 flex-col jc-center ai-center';
+  $imageContainer.setAttribute('data-objectid', artObj.objectID);
+
+  var $image = document.createElement('img');
+  addImageToImg(artObj, $image);
+
+  $imageContainer.appendChild($image);
+
+  return $imageContainer;
+}
+
+function appendImageToGallery($imgContainer, $gallery) {
+  $gallery.appendChild($imgContainer);
+}
+
+function renderAllLiked() {
+  // function to append all liked images to the gallery
+  // Clear any children nodes
+  $bottomSheetGallery.replaceChildren();
+
+  for (var i = 0; i < data.likedObjects.length; i++) {
+    var $imageContainer = renderImage(data.likedObjects[i]);
+    appendImageToGallery($imageContainer, $bottomSheetGallery);
+  }
 }
 
 //           //
@@ -309,4 +345,5 @@ function setImage(artObj) {
 
 // Get departments, assuming departments will not change in single session
 // but may change in the future.
+renderAllLiked();
 getMetDepartments();

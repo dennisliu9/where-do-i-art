@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 .container {
   max-width: 1000px;
   margin: 0 auto;
@@ -9,6 +13,10 @@
 
 .col-full {
   width: 100%;
+}
+
+.col-1-3 {
+  width: calc(100% / 3);
 }
 
 .flex-col {
@@ -33,4 +41,23 @@
 
 .text-center {
   text-align: center;
+}
+
+@media only screen and (min-width: 851px) {
+  /* "Desktop" experience */
+}
+
+@media only screen and (max-width: 850px) {
+  /* "Tablet" experience */
+
+  .col-1-3 {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  /* "Phone" experience */
+  .col-1-3 {
+    width: 100%;
+  }
 }
