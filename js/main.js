@@ -58,6 +58,7 @@ $dislikeButton.addEventListener('click', function (event) {
 $likeButton.addEventListener('click', function (event) {
   event.preventDefault();
   data.likedObjects.push(displayArtObj);
+  appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
   nextArtObj = artObjCache.shift();
   getArtwork();
   setImage(nextArtObj);
@@ -333,6 +334,12 @@ function renderImage(artObj) {
   addImageToImg(artObj, $image);
 
   $imageContainer.appendChild($image);
+
+  // light up gallery text
+  $bottomSheetHeader.classList.add('color-flash');
+  setTimeout(function () {
+    $bottomSheetHeader.classList.remove('color-flash');
+  }, 250);
 
   return $imageContainer;
 }
