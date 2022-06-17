@@ -13,6 +13,7 @@ var nextArtObj = {};
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
+var $mainAppArea = document.querySelector('#main-app-area');
 
 var $showSomething = document.querySelector('#show-something');
 var $displayImage = document.querySelector('#display-image');
@@ -83,6 +84,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.remove('inner-scroll');
     $bottomSheetCloseButton.classList.add('invisible');
     $bottomSheetExpandButton.textContent = 'expand_less';
+    $mainAppArea.classList.remove('no-scroll');
+    $mainAppArea.classList.add('inner-scroll');
   } else {
     // open bottom sheet
     $bottomSheet.classList.remove('light-round-border');
@@ -92,6 +95,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.add('inner-scroll');
     $bottomSheetCloseButton.classList.remove('invisible');
     $bottomSheetExpandButton.textContent = 'expand_more';
+    $mainAppArea.classList.add('no-scroll');
+    $mainAppArea.classList.remove('inner-scroll');
   }
 });
 

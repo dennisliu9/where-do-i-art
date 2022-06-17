@@ -24,6 +24,7 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-white: #fff;
   --color-black: #000;
   --header-height: 64px;
+  --bottom-header-height: 92px;
 }
 
 .hidden {
@@ -141,12 +142,32 @@ h5 {
   margin-right: 20px;
 }
 
+.padding-t-3 {
+  padding-top: 3rem;
+}
+
+.padding-b-3 {
+  padding-bottom: 3rem;
+}
+
+.padding-b-1 {
+  padding-bottom: 1rem;
+}
+
 .fully-contained {
   width: fit-content;
   height: fit-content;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+.height-inherit {
+  height: inherit;
+}
+
+.height-full-no-header-no-bottom {
+  height: calc(100vh - var(--header-height) - var(--bottom-header-height));
 }
 
 .no-mobile {
@@ -345,9 +366,13 @@ img:hover {
   */
 }
 
-.subheader-spacing {
+/* .subheader-spacing {
   margin-top: 28px;
   margin-bottom: 28px;
+} */
+
+.header-height-92 {
+  height: var(--bottom-header-height);
 }
 
 /* Media Queries */
@@ -439,6 +464,9 @@ img:hover {
 
 @media only screen and (max-width: 450px) {
   /* "Phone" experience */
+  :root {
+    --bottom-header-height: 68px;
+  }
 
   .no-mobile {
     display: none;
@@ -454,9 +482,9 @@ img:hover {
     margin-top: 4rem;
   }
 
-  .margin-t-3-mobile {
+  /* .margin-t-3-mobile {
     margin-top: 3rem;
-  }
+  } */
 
   .button-main:hover {
     /* Do not brighten on mobile, hover not always implemented */
@@ -491,9 +519,13 @@ img:hover {
     font-size: 40px;
   }
 
-  .subheader-spacing {
+  /* .subheader-spacing {
     margin-top: 16px;
     margin-bottom: 16px;
+  } */
+
+  .header-height-92 {
+    height: var(--bottom-header-height);
   }
 
   .minimized {
