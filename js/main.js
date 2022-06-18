@@ -13,14 +13,26 @@ var nextArtObj = {};
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
+var $mainAppArea = document.querySelector('#main-app-area');
+
 var $showSomething = document.querySelector('#show-something');
 var $displayImage = document.querySelector('#display-image');
 var $dislikeButton = document.querySelector('#dislike-button');
 var $likeButton = document.querySelector('#like-button');
 
-//                 //
-// event listeners //
-//                 //
+var $bottomSheet = document.querySelector('#bottom-sheet');
+var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
+var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
+var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
+var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
+var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
+
+var $detailModalContainer = document.querySelector('#detail-container');
+var $detailModalImage = document.querySelector('#detail-image');
+
+//                                            //
+// event listeners (that aren't in functions) //
+//                                            //
 
 // Logo text switches to landing view
 $topLogo.addEventListener('click', function (event) {
@@ -29,18 +41,20 @@ $topLogo.addEventListener('click', function (event) {
 
 // Show Something button switches to selection view
 $showSomething.addEventListener('click', function (event) {
+  if ($showSomething.classList.contains('button-main-disabled')) {
+    return;
+  }
   // (future optimization point)
   // When clicked, grab one and set it immediately
-  getArtwork(true); // passing true to isStart parameter
   swapView(event.target.dataset.viewLink);
   // Then start building cache of images
   for (var i = 1; i <= cacheItemsNum; i++) {
-    // console.log('building cache, item #: ', i);
     getArtwork();
   }
 });
 
 $dislikeButton.addEventListener('click', function (event) {
+  event.preventDefault();
   // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
   // retrieve the next from cache list
@@ -52,11 +66,41 @@ $dislikeButton.addEventListener('click', function (event) {
 });
 
 $likeButton.addEventListener('click', function (event) {
+  event.preventDefault();
   data.likedObjects.push(displayArtObj);
+  appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
   nextArtObj = artObjCache.shift();
   getArtwork();
   setImage(nextArtObj);
 });
+
+$bottomSheetHeader.addEventListener('click', function (event) {
+  if (event.target.tagName === 'SPAN' && ['close', 'expand_more'].includes(event.target.textContent)) {
+    // close bottom sheet
+    $bottomSheet.classList.add('light-round-border');
+    $bottomSheet.classList.add('drop-shadow-up');
+    $bottomSheet.classList.add('minimized');
+    $bottomSheet.classList.add('no-scroll');
+    $bottomSheet.classList.remove('inner-scroll');
+    $bottomSheetCloseButton.classList.add('invisible');
+    $bottomSheetExpandButton.textContent = 'expand_less';
+    $mainAppArea.classList.remove('no-scroll');
+    $mainAppArea.classList.add('inner-scroll');
+  } else {
+    // open bottom sheet
+    $bottomSheet.classList.remove('light-round-border');
+    $bottomSheet.classList.remove('drop-shadow-up');
+    $bottomSheet.classList.remove('minimized');
+    $bottomSheet.classList.remove('no-scroll');
+    $bottomSheet.classList.add('inner-scroll');
+    $bottomSheetCloseButton.classList.remove('invisible');
+    $bottomSheetExpandButton.textContent = 'expand_more';
+    $mainAppArea.classList.add('no-scroll');
+    $mainAppArea.classList.remove('inner-scroll');
+  }
+});
+
+window.addEventListener('click', handleImageClick);
 
 //           //
 // functions //
@@ -124,14 +168,43 @@ function shuffleArray(array) {
 // Metropolitan Museum of Art API //
 //                                //
 
+function startup() {
+
+  // Render Liked images into gallery
+  renderAllLiked();
+
+  // Get departments, assuming departments will not change in single session
+  // (but may change in the future)
+
+  // Potential optimization point: Use Met Departments from localStorage if available
+  var getMetDeptsRequest = getMetDepartments();
+  getMetDeptsRequest.addEventListener('load', function (event) {
+    // Save retrieved departments
+    metDepts = getMetDeptsRequest.response.departments;
+
+    // Enables start button
+    $showSomething.classList.add('button-main');
+    $showSomething.classList.add('bg-color-accent');
+    $showSomething.classList.add('color-white');
+    $showSomething.setAttribute('data-view-link', 'selection');
+    $showSomething.textContent = 'Show me something!';
+    $showSomething.classList.remove('button-main-disabled');
+
+    // Pull first image to be shown immediately
+    getArtwork(true);
+  });
+  getMetDeptsRequest.send();
+}
+
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
   deptXhr.open('GET', metEndpoint + 'departments');
   deptXhr.responseType = 'json';
-  deptXhr.addEventListener('load', function (event) {
-    metDepts = deptXhr.response.departments;
-  });
-  deptXhr.send();
+  // deptXhr.addEventListener('load', function (event) {
+  //   metDepts = deptXhr.response.departments;
+  // });
+  // deptXhr.send();
+  return deptXhr;
 }
 
 // Functions for searching and returning art objects
@@ -230,14 +303,14 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   */
 
   metSearchResults = searchRequest.response;
-  // Prevent reshuffling
+  // Prevent extraneous reshuffling
   if (areResultsShuffled === false) {
     metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
     areResultsShuffled = true;
   }
   if (metSearchResults.objectIDs === null) {
     // if results were bad, exit for now
-    return;
+    return 'Error: metSearchResults.objectIDs was null';
   } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
     // if we exhausted the list of id's, pull again
     getArtwork();
@@ -293,20 +366,94 @@ function getArtwork(isStart) {
   searchRequest.send();
 }
 
-function setImage(artObj) {
-  displayArtObj = artObj;
+function addImageToImg(artObj, $img, requestFullSize) {
+  // Note: Modifies the passed in $img
   var objectName = (artObj.objectName === '') ? 'Untitled' : artObj.objectName;
   var artistName = (artObj.artistDisplayName === '') ? 'Unknown' : artObj.artistDisplayName;
   var objectDate = (artObj.objectDate === '') ? 'Unknown Date' : String(artObj.objectDate);
   var altString = objectName + ' by ' + artistName + ' (' + objectDate + ')';
-  $displayImage.setAttribute('src', artObj.primaryImageSmall);
-  $displayImage.setAttribute('alt', altString);
+
+  if (requestFullSize) {
+    $img.setAttribute('src', artObj.primaryImage);
+  } else {
+    $img.setAttribute('src', artObj.primaryImageSmall);
+  }
+  $img.setAttribute('alt', altString);
+  $img.setAttribute('objectId', artObj.objectID);
+}
+
+function setImage(artObj) {
+  // displayArtObj holds the data for the image being decided on
+  displayArtObj = artObj;
+  addImageToImg(artObj, $displayImage);
+}
+
+function renderImage(artObj) {
+  var $imageContainer = document.createElement('div');
+  $imageContainer.className = 'img-gallery-container col-1-3 flex-col jc-center ai-center';
+  $imageContainer.setAttribute('data-objectid', artObj.objectID);
+
+  var $image = document.createElement('img');
+  addImageToImg(artObj, $image);
+
+  $imageContainer.appendChild($image);
+
+  // light up gallery text
+  $bottomSheetHeaderText.classList.add('color-flash');
+  setTimeout(function () {
+    $bottomSheetHeaderText.classList.remove('color-flash');
+  }, 250);
+
+  return $imageContainer;
+}
+
+function appendImageToGallery($imgContainer, $gallery) {
+  $gallery.appendChild($imgContainer);
+}
+
+function renderAllLiked() {
+  // function to append all liked images to the gallery
+  // Clear any children nodes
+  $bottomSheetGallery.replaceChildren();
+
+  for (var i = 0; i < data.likedObjects.length; i++) {
+    var $imageContainer = renderImage(data.likedObjects[i]);
+    appendImageToGallery($imageContainer, $bottomSheetGallery);
+  }
+}
+
+function handleImageClick(event) {
+  if (event.target.tagName === 'IMG' && event.target.id !== 'detail-image') {
+    // Image was clicked, now see it in detail
+
+    // find image object of image that was clicked and put it in viewingInDetail
+    if (event.target.id === 'display-image') {
+      data.viewingInDetail = displayArtObj;
+    } else {
+      for (var i = 0; i < data.likedObjects.length; i++) {
+        if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
+          data.viewingInDetail = data.likedObjects[i];
+        }
+      }
+    }
+
+    // Point detail img to the image url
+    // Setting requestFullSize to false for now, images are VERY large
+    addImageToImg(data.viewingInDetail, $detailModalImage, false);
+    $detailModalContainer.classList.remove('hidden');
+  } else if (event.target.id === 'detail-overlay') {
+    // Outside of detail image was clicked, close the detail modal
+    $detailModalContainer.classList.add('hidden');
+    data.viewingInDetail = null;
+  } else if (event.target.id === 'detail-image') {
+    // Detail image was click, open the full res in a new window/tab
+
+    this.window.open(data.viewingInDetail.primaryImage, '_blank');
+  }
 }
 
 //           //
 // Execution //
 //           //
 
-// Get departments, assuming departments will not change in single session
-// but may change in the future.
-getMetDepartments();
+startup();

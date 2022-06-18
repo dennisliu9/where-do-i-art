@@ -11,6 +11,10 @@
   width: 100%;
 }
 
+.col-1-3 {
+  width: calc(100% / 3);
+}
+
 .flex-col {
   display: flex;
 }
@@ -23,14 +27,75 @@
   justify-content: space-evenly;
 }
 
+.jc-fstart {
+  justify-content: flex-start;
+}
+
+.jc-between {
+  justify-content: space-between;
+}
+
+.jc-fend {
+  justify-content: flex-end;
+}
+
 .ai-center {
   align-items: center;
+}
+
+.ai-fstart {
+  align-items: flex-start;
 }
 
 .flex-wrap-on {
   flex-wrap: wrap;
 }
 
+.pos-abs-full {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.pos-fixed-full {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.z-level-6 {
+  position: relative;
+  z-index: 6;
+}
+
+.z-level-5 {
+  position: relative;
+  z-index: 5;
+}
+
 .text-center {
   text-align: center;
+}
+
+@media only screen and (min-width: 851px) {
+  /* "Desktop" experience */
+}
+
+@media only screen and (max-width: 850px) {
+  /* "Tablet" experience */
+
+  .col-1-3 {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  /* "Phone" experience */
+  .col-1-3 {
+    width: 100%;
+  }
 }
