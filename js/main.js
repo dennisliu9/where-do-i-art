@@ -1,3 +1,5 @@
+/* global data, metadata */
+
 //           //
 // variables //
 //           //
@@ -11,6 +13,8 @@ var cacheItemsNum = 10;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = '';
+var likeParam_numOfProperties = 3;
+var likeParam_numOfValues = 2;
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -72,6 +76,7 @@ $dislikeButton.addEventListener('click', function (event) {
 $likeButton.addEventListener('click', function (event) {
   event.preventDefault();
   data.likedObjects.push(displayArtObj);
+  addObjToMetadata(displayArtObj);
   appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
   nextArtObj = artObjCache.shift();
   getArtwork();
@@ -472,6 +477,100 @@ function handleSelectionChipClick(event) {
     } else {
       $searchTypeChipsContainer.children[i].classList.remove('chips-main-selected');
     }
+  }
+}
+
+function addObjToMetadata(artObj) {
+  for (var artProperty in metadata.likedMetadata) {
+    var likedMetadataPropertyObj;
+    var newValue;
+    // handle nested geoLocation properties
+    if (artProperty === 'geoLocation') {
+      for (var geoProperty in metadata.likedMetadata.geoLocation) {
+        likedMetadataPropertyObj = metadata.likedMetadata.geoLocation[geoProperty];
+        newValue = artObj[geoProperty];
+        if (newValue === '') {
+          newValue = 'null';
+        }
+        if (newValue in likedMetadataPropertyObj) {
+          likedMetadataPropertyObj[newValue] += 1;
+        } else {
+          likedMetadataPropertyObj[newValue] = 1;
+        }
+      }
+    } else {
+      likedMetadataPropertyObj = metadata.likedMetadata[artProperty]; // object storing possible values as keys, counts as values, e.g. {true: 0, false: 0}
+      newValue = artObj[artProperty]; // value of current property in the passed in artObj, e.g. "Vincent van Gogh"
+      if (newValue === '') {
+        newValue = 'null';
+      }
+
+      if (newValue in likedMetadataPropertyObj) {
+        likedMetadataPropertyObj[newValue] += 1;
+      } else {
+        likedMetadataPropertyObj[newValue] = 1;
+      }
+    }
+  }
+}
+
+/*
+var likeParam_numOfProperties = 3;
+var likeParam_numOfValues = 2;
+*/
+
+function getSearchTerms(numProps) {
+  // Note: make sure numProps !> the number of properties stored in likedMetadata
+  var searchParams = [];
+  var availableParams = Object.keys(metadata.likedMetadata);
+  availableParams = shuffleArray(availableParams);
+
+  searchParams = availableParams.slice(0, numProps);
+  if (searchParams.includes('geoLocation')) {
+    // randomly pick a key from the geoLocation keys and replace 'geoLocation' in searchParams with it
+    searchParams[searchParams.indexOf('geoLocation')] = shuffleArray(Object.keys(metadata.likedMetadata.geoLocation))[0];
+  }
+
+  // console.log(searchParams);
+  return searchParams;
+}
+
+function getSearchValues(searchParams, numVals) {
+  /*
+  Declare empty dictionary to hold the parameter and the values for that parameter to search on
+  Loop through each parameter (artistName, medium, etc.) in searchParams
+    Declare an empty array to store the value of a key as many times as the value to that key
+    Loop through each parameter's keys ("Pablo Picasso", "Claude Monet", etc.)
+      Loop from i=0 to value number
+        Push the value each time
+    Once array is full with representation weighted representation
+      Shuffle the array
+      pick numVals from it by slicing
+      remove duplicates with [...new Set(array)]
+      Assign sliced values to dictionary under parameter key
+  return dictionary
+  */
+  var searchVals = {};
+  for (var i = 0; i < searchParams.length; i++) {
+    var fullValues = [];
+    // TODO: handle geoLocation again
+    // TODO: handle departments, not stored in object as department id, but search is on department id
+    // However, name does not perfectly match departments response
+
+    for (var paramVal in metadata.likedMetadata[searchParams[i]]) {
+      for (var j = 0; j < metadata.likedMetadata[searchParams[i]][paramVal]; j++) {
+        fullValues.push(paramVal);
+      }
+    }
+    searchVals[searchParams[i]] = [...new Set(shuffleArray(fullValues).slice(0, numVals))];
+  }
+  return searchVals;
+}
+
+// Temporary function until metadata is persisted to local storage
+function addAllToMetadata(artObjArray) {
+  for (var i = 0; i < artObjArray.length; i++) {
+    addObjToMetadata(artObjArray[i]);
   }
 }
 

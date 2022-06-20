@@ -1,4 +1,4 @@
-/* exported data */
+/* exported data, metadata */
 
 var localStorageKey = 'ajax-data';
 var devLocalStorageOverrideFlag = false;
@@ -7,6 +7,27 @@ var data = {
   likedObjects: [],
   dislikedObjects: [],
   viewingInDetail: null
+};
+var metadata = {
+  likedMetadata: {
+    isHighlight: {
+      true: 0,
+      false: 0
+    },
+    deparmentId: {},
+    artistDisplayName: {},
+    culture: {},
+    medium: {},
+    geoLocation: {
+      city: {},
+      state: {},
+      county: {},
+      country: {},
+      region: {},
+      subregion: {}
+    }
+    // dateBegin and dateEnd later
+  }
 };
 
 if (localStorage.getItem(localStorageKey) !== null) {
