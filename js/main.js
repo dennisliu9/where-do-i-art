@@ -10,6 +10,7 @@ var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
 var cacheItemsNum = 10;
 var displayArtObj = {};
 var nextArtObj = {};
+var searchType = '';
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -29,6 +30,9 @@ var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-butt
 
 var $detailModalContainer = document.querySelector('#detail-container');
 var $detailModalImage = document.querySelector('#detail-image');
+
+// need some way to detect clicks on the group
+var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
 
 //                                            //
 // event listeners (that aren't in functions) //
@@ -101,6 +105,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
 });
 
 window.addEventListener('click', handleImageClick);
+
+$searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
 //           //
 // functions //
@@ -449,6 +455,23 @@ function handleImageClick(event) {
     // Detail image was click, open the full res in a new window/tab
 
     this.window.open(data.viewingInDetail.primaryImage, '_blank');
+  }
+}
+
+function handleSelectionChipClick(event) {
+  if (event.target.tagName !== 'BUTTON') {
+    return;
+  }
+  // assign global variable
+  searchType = event.target.dataset.searchType;
+
+  // mark only clicked one as selected
+  for (var i = 0; i < $searchTypeChipsContainer.children.length; i++) {
+    if (event.target === $searchTypeChipsContainer.children[i]) {
+      $searchTypeChipsContainer.children[i].classList.add('chips-main-selected');
+    } else {
+      $searchTypeChipsContainer.children[i].classList.remove('chips-main-selected');
+    }
   }
 }
 
