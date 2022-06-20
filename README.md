@@ -2,4 +2,4 @@
 
 A dynamic HTML, CSS, and JavaScript solo project.
 
-[Link to Github Pages Deployment](https://dennisliu9.github.io/ajax-project/)
+[Link to GitHub Pages Deployment](https://dennisliu9.github.io/ajax-project/)
