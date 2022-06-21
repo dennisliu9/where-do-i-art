@@ -247,7 +247,7 @@ function metAcquireArt(objectId) {
   return acquireXhr;
 }
 
-function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest) {
+function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest, areResultsShuffled, deptId) {
   /*
   handleAcquireResponse:
     (runs once acquireRequest has loaded)
@@ -273,6 +273,12 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   artObjCache - global
   */
   metArtObj = acquireRequest.response;
+
+  // DEBUG: Add the department ID to metArtObj
+  console.log('randDept value: ', deptId);
+  console.log('department value: ', metArtObj.department);
+  metArtObj.departmentId = deptId;
+
   // Store the acquired object ID so we know we've seen it already
   data.shownObjectIds.push(metArtObj.objectID);
   if (metArtObj.primaryImage !== '') {
@@ -284,11 +290,11 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
     }
   } else {
     searchResultsIdx++;
-    handleSearchResponse(searchRequest, searchResultsIdx, isStart); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
   }
 }
 
-function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled) {
+function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId) {
   /*
   handleSearchResponse:
     (runs once searchRequest has loaded)
@@ -337,7 +343,7 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
   var acquireRequest = metAcquireArt(currentObjId);
   acquireRequest.addEventListener('load', function (event) {
-    handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest);
+    handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest, areResultsShuffled, deptId);
   });
   acquireRequest.send();
 }
@@ -366,13 +372,14 @@ function getArtwork(isStart) {
     // Don't keep sending requests if the cache is full, prevent button spamming to abuse API
     return;
   }
-  var randDept = Math.floor(Math.random() * metDepts.length);
+  var randDeptIdx = Math.floor(Math.random() * metDepts.length);
+  var randDept = metDepts[randDeptIdx].departmentId;
   // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
-  var searchRequest = metSearch(metDepts[randDept].departmentId);
+  var searchRequest = metSearch(randDept);
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
   var areResultsShuffled = false;
   searchRequest.addEventListener('load', function (event) {
-    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled);
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, randDept);
   });
   searchRequest.send();
 }

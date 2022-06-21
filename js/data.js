@@ -14,6 +14,7 @@ var metadata = {
       true: 0,
       false: 0
     },
+    department: {},
     deparmentId: {},
     artistDisplayName: {},
     culture: {},
