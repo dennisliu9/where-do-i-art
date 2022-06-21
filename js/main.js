@@ -278,6 +278,14 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   console.log('randDept value: ', deptId);
   console.log('department value: ', metArtObj.department);
   metArtObj.departmentId = deptId;
+  // Add department and departmentID to lookup object, because these end up differing from metDepts
+  // This is assuming a department name is only ever associated with departmentID (unverified assumption)
+  if (data.departmentLookup[metArtObj.department] === undefined) {
+    data.departmentLookup[metArtObj.department] = deptId;
+  } else if (data.departmentLookup[metArtObj.department] !== deptId) {
+    console.log('data.departmentLookup[metArtObj.department]: ');
+    console.log('new department id for this department: ', deptId);
+  }
 
   // Store the acquired object ID so we know we've seen it already
   data.shownObjectIds.push(metArtObj.objectID);
@@ -507,7 +515,7 @@ function addObjToMetadata(artObj) {
       }
     } else {
       likedMetadataPropertyObj = metadata.likedMetadata[artProperty]; // object storing possible values as keys, counts as values, e.g. {true: 0, false: 0}
-      newValue = artObj[artProperty]; // value of current property in the passed in artObj, e.g. "Vincent van Gogh"
+      newValue = String(artObj[artProperty]); // value of current property in the passed in artObj, e.g. "Vincent van Gogh"
       if (newValue === '') {
         newValue = 'null';
       }

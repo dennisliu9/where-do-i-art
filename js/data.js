@@ -6,7 +6,8 @@ var data = {
   shownObjectIds: [],
   likedObjects: [],
   dislikedObjects: [],
-  viewingInDetail: null
+  viewingInDetail: null,
+  departmentLookup: {} // used to store department names from responses along with the id used to find it (these do not match the departments query)
 };
 var metadata = {
   likedMetadata: {
@@ -14,8 +15,7 @@ var metadata = {
       true: 0,
       false: 0
     },
-    department: {},
-    deparmentId: {},
+    departmentId: {},
     artistDisplayName: {},
     culture: {},
     medium: {},
