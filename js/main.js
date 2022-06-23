@@ -8,11 +8,8 @@ var metEndpoint = 'https://collectionapi.metmuseum.org/public/collection/v1/';
 var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
-// var randomObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-// var similarObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-// var artObjCache = randomObjCache; // points to either random cache or similar cache
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 5;
+var cacheItemsNum = 1;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
@@ -60,39 +57,9 @@ $showSomething.addEventListener('click', function (event) {
   swapView(event.target.dataset.viewLink);
   // Then start building cache of images for both caches
   // Start with selected option
-  // debugger;
   for (var i = 1; i <= cacheItemsNum; i++) {
     getArtwork(false, searchType);
   }
-
-  /*
-
-  if (searchType === 'random') {
-    artObjCache = randomObjCache;
-  } else if (searchType === 'similar') {
-    artObjCache = similarObjCache;
-  }
-*/
-
-  // Switch to other option
-  // if (searchType === 'random') {
-  //   searchType = 'similar';
-  //   artObjCache = similarObjCache;
-  // } else {
-  //   searchType = 'random';
-  //   artObjCache = randomObjCache;
-  // }
-  // // Cache for other object and then switch back
-  // for (var j = 1; j <= cacheItemsNum; j++) {
-  //   getArtwork(false, searchType);
-  // }
-  // if (searchType === 'random') {
-  //   searchType = 'similar';
-  //   artObjCache = similarObjCache;
-  // } else {
-  //   searchType = 'random';
-  //   artObjCache = randomObjCache;
-  // }
 });
 
 $dislikeButton.addEventListener('click', function (event) {
@@ -102,9 +69,6 @@ $dislikeButton.addEventListener('click', function (event) {
   }
   // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
-
-  // TODO: prevent below operations from happening if artObjCache is empty
-
   // retrieve the next from cache list
   nextArtObj = artObjCache.shift();
   // fetch another artwork to replace the missing one
@@ -121,8 +85,6 @@ $likeButton.addEventListener('click', function (event) {
   data.likedObjects.push(displayArtObj);
   addObjToMetadata(displayArtObj, 'likedMetadata');
   appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
-
-  // TODO: prevent below operations from happening if artObjCache is empty
   nextArtObj = artObjCache.shift();
   getArtwork(false, searchType);
   setImage(nextArtObj);
@@ -275,10 +237,7 @@ function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
   deptXhr.open('GET', metEndpoint + 'departments');
   deptXhr.responseType = 'json';
-  // deptXhr.addEventListener('load', function (event) {
-  //   metDepts = deptXhr.response.departments;
-  // });
-  // deptXhr.send();
+
   return deptXhr;
 }
 
@@ -293,7 +252,7 @@ function metSearch(deptId, specificURL) {
   } else {
     getUrl = metEndpoint + 'objects?departmentIds=' + deptId;
   }
-  console.log('%cgetUrl:', 'color: lime; background-color: black; padding: 3px; text-decoration: none;', getUrl);
+  getUrl = getUrl.replace(' ', '%20');
   var searchXhr = new XMLHttpRequest();
   searchXhr.open('GET', getUrl);
   searchXhr.responseType = 'json';
@@ -335,17 +294,22 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   data - global
   artObjCache - global
   */
-  console.log('%chandleAcquireResponse() called', 'color: white; background-color: navy; padding: 3px');
   metArtObj = acquireRequest.response;
 
-  metArtObj.departmentId = deptId;
-  // Add department and departmentID to lookup object, because these end up differing from metDepts
-  // This is assuming a department name is only ever associated with departmentID (unverified assumption)
-  if (data.departmentLookup[metArtObj.department] === undefined) {
-    data.departmentLookup[metArtObj.department] = deptId;
-  } else if (data.departmentLookup[metArtObj.department] !== deptId) {
-    // console.log('data.departmentLookup[metArtObj.department]: ');
-    // console.log('new department id for this department: ', deptId);
+  if (deptId === -1) {
+    // look up to get department id
+    if (data.departmentLookup[metArtObj.department] !== undefined) {
+      metArtObj.departmentId = data.departmentLookup[metArtObj.department];
+    } else {
+      metArtObj.departmentId = -1; // keep -1 for now, backfill in the future
+    }
+  } else {
+    metArtObj.departmentId = deptId;
+    // Add department and departmentID to lookup object, because these end up differing from metDepts
+    // This is assuming a department name is only ever associated with departmentID (unverified assumption)
+    if (data.departmentLookup[metArtObj.department] === undefined) {
+      data.departmentLookup[metArtObj.department] = deptId;
+    }
   }
 
   if (metArtObj.primaryImage !== '') {
@@ -359,7 +323,6 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
     }
   } else {
     searchResultsIdx++;
-    console.log('no image on this object, searchResultsIdx is now: ', searchResultsIdx);
     handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
   }
 }
@@ -388,18 +351,12 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   metSearchResults - global
   data - global
   */
-
-  console.log('%chandleSearchResponse() called', 'color: white; background-color: darkgreen; padding: 3px');
   metSearchResults = searchRequest.response;
 
-  console.log('%cmetSearchResults: ', 'color: white; background-color: orange; padding: 2px;', metSearchResults);
   // objectIDs is null when there are 0 results
   if (metSearchResults.objectIDs === null) {
     // if no results, pull again
-    console.log('%c No results, pulling again', 'color: white; background-color: red; padding: 3px;');
-    // debugger;
     getArtwork(false, searchType);
-
     // exit out of the function call because this metSearchResults is no longer useful
     return;
   }
@@ -421,7 +378,6 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   // if we exhausted the list of id's, pull again
   if (searchResultsIdx >= metSearchResults.objectIDs.length) {
     getArtwork(false, searchType);
-
     // exit out of the function call because this metSearchResults is no longer useful
     return;
   }
@@ -462,26 +418,24 @@ function getArtwork(isStart, searchType) {
   }
 
   var searchRequest;
+  var deptId;
   if (searchType === 'similar') {
     // generate URL and stuff
     var similarURL = generateSearchURL(similarNumOfProperties, similarNumOfValues);
-    searchRequest = metSearch(-1, similarURL);
+    deptId = -1;
+    searchRequest = metSearch(deptId, similarURL);
   } else {
     var randDeptIdx = Math.floor(Math.random() * metDepts.length);
     // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
-    var randDept = metDepts[randDeptIdx].departmentId;
-    searchRequest = metSearch(randDept);
+    deptId = metDepts[randDeptIdx].departmentId;
+    searchRequest = metSearch(deptId);
   }
-
-  // console.log('similarURL: ', similarURL);
-  // console.log('randDept: ', randDept);
 
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
   var areResultsShuffled = false;
   searchRequest.addEventListener('load', function (event) {
-    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, randDept);
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId);
   });
-  console.log('%csearchRequest sending, calling API', 'color: white; background-color: red; padding: 3px;');
   searchRequest.send();
 }
 
@@ -578,16 +532,6 @@ function handleSelectionChipClick(event) {
   // assign global variable
   searchType = event.target.dataset.searchType;
 
-  // switch cache
-  // if (searchType === 'random') {
-  //   artObjCache = randomObjCache;
-  // } else if (searchType === 'similar') {
-  //   artObjCache = similarObjCache;
-  // }
-  console.log('switched to: ', searchType);
-  // console.log('artObjCache === randomObjCache', !!(artObjCache === randomObjCache));
-  // console.log('artObjCache === similarObjCache', !!(artObjCache === similarObjCache));
-
   // mark only clicked one as selected
   for (var i = 0; i < $searchTypeChipsContainer.children.length; i++) {
     if (event.target === $searchTypeChipsContainer.children[i]) {
@@ -596,18 +540,6 @@ function handleSelectionChipClick(event) {
       $searchTypeChipsContainer.children[i].classList.remove('chips-main-selected');
     }
   }
-
-  // If selection's cache doesn't have full cache, start pulling
-  // If first result is slow to pull, should one from the other cache if possible?
-  // if (artObjCache.length < cacheItemsNum) {
-  //   for (i = artObjCache.length; i < cacheItemsNum; i++) {
-  //     console.log('%cgetting new artwork because of selection click', 'color:white; background-color:darkgreen');
-  //     console.log('i:', i);
-  //     console.log('cacheItemsNum: ', cacheItemsNum);
-  //     console.log('artObjCache: ', artObjCache);
-  //     getArtwork(false, searchType);
-  //   }
-  // }
 }
 
 function addObjToMetadata(artObj, metadataProperty) {
@@ -665,12 +597,7 @@ function getSearchTerms(numProps) {
 
   // if numProps > availableParams.length, all are sliced
   searchParams = availableParams.slice(0, numProps);
-  // if (searchParams.includes('geoLocation')) {
-  //   // randomly pick a key from the geoLocation keys and replace 'geoLocation' in searchParams with it
-  //   searchParams[searchParams.indexOf('geoLocation')] = shuffleArray(Object.keys(metadata.likedMetadata.geoLocation))[0];
-  // }
 
-  // console.log(searchParams);
   return searchParams;
 }
 
@@ -754,7 +681,6 @@ function generateSearchURL(numProps, numVals) {
     3030: 20
   };
 
-  console.log('valuesToSearch', valuesToSearch);
   var searchURL = metEndpoint + 'search?hasImages=true';
   var qQuery = '&q=*';
 
@@ -791,15 +717,11 @@ function generateSearchURL(numProps, numVals) {
       if (key === 'objectBeginDate') {
         startDate = flooredDate;
         endDate = flooredDate + adjustmentAmt;
-
       } else if (key === 'objectEndDate') {
         startDate = flooredDate - adjustmentAmt;
         endDate = flooredDate;
       }
-
       searchURL += '&dateBegin=' + startDate + '&dateEnd=' + endDate;
-      console.log('date query: ', searchURL);
-
     } else {
       searchURL += '&' + key + '=' + valuesToSearch[key][0];
     }
@@ -807,39 +729,6 @@ function generateSearchURL(numProps, numVals) {
 
   searchURL += qQuery;
   return searchURL;
-  /*
-  getUrl = metEndpoint + 'search?' +
-      'hasImages=true' +
-      '&departmentId=' + deptId +
-      '&q=' + query;
-  } else {
-    getUrl = metEndpoint + 'objects?departmentIds=' + deptId;
-  */
-
-  /*
-  isHighlight: {
-    true: 0,
-      false: 0
-  },
-  departmentId: { },
-    -- One Id at a time
-  artistDisplayName: { },
-    -- artistOrCulture=true&q=____
-  culture: { },
-    -- artistOrCulture=true&q=____
-  medium: { },
-    -- "Silk, metal" must be searched medium=Silk|Metal&...
-    -- "Sea shell" must be searched medium=Sea%20shell&...
-  geoLocation: {
-    city: { },
-    state: { },
-    county: { },
-    country: { },
-    region: { },
-    subregion: { }
-  }
-    --geoLocation=____ (any)
-  */
 }
 
 // Temporary function until metadata is persisted to local storage
