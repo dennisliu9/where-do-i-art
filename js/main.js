@@ -57,10 +57,41 @@ $showSomething.addEventListener('click', function (event) {
   // (future optimization point)
   // When clicked, grab one and set it immediately
   swapView(event.target.dataset.viewLink);
-  // Then start building cache of images
+  // Then start building cache of images for both caches
+  // Start with selected option
+  // debugger;
   for (var i = 1; i <= cacheItemsNum; i++) {
     getArtwork(false, searchType);
   }
+
+  /*
+
+  if (searchType === 'random') {
+    artObjCache = randomObjCache;
+  } else if (searchType === 'similar') {
+    artObjCache = similarObjCache;
+  }
+*/
+
+  // Switch to other option
+  // if (searchType === 'random') {
+  //   searchType = 'similar';
+  //   artObjCache = similarObjCache;
+  // } else {
+  //   searchType = 'random';
+  //   artObjCache = randomObjCache;
+  // }
+  // // Cache for other object and then switch back
+  // for (var j = 1; j <= cacheItemsNum; j++) {
+  //   getArtwork(false, searchType);
+  // }
+  // if (searchType === 'random') {
+  //   searchType = 'similar';
+  //   artObjCache = similarObjCache;
+  // } else {
+  //   searchType = 'random';
+  //   artObjCache = randomObjCache;
+  // }
 });
 
 $dislikeButton.addEventListener('click', function (event) {
@@ -331,9 +362,12 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   // objectIDs is null when there are 0 results
   if (metSearchResults.objectIDs === null) {
     // if no results, pull again
-    console.log('%c metSearchResults.objectIDs was null, pulling again', 'color: white; background-color: red; padding: 3px;');
-    debugger;
+    // console.log('%c metSearchResults.objectIDs was null, pulling again', 'color: white; background-color: red; padding: 3px;');
+    // debugger;
     getArtwork(false, searchType);
+
+    // exit out of the if because this metSearchResults is no longer useful
+    return;
   }
 
   // Prevent extraneous reshuffling
@@ -395,13 +429,15 @@ function getArtwork(isStart, searchType) {
     // generate URL and stuff
     var similarURL = generateSearchURL(similarNumOfProperties, similarNumOfValues);
     searchRequest = metSearch(-1, similarURL);
-    console.log('similar searchRequest: ', searchRequest);
   } else {
     var randDeptIdx = Math.floor(Math.random() * metDepts.length);
     // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
     var randDept = metDepts[randDeptIdx].departmentId;
     searchRequest = metSearch(randDept);
   }
+
+  console.log('similarURL: ', similarURL);
+  console.log('randDept: ', randDept);
 
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
   var areResultsShuffled = false;
@@ -510,6 +546,9 @@ function handleSelectionChipClick(event) {
   } else if (searchType === 'similar') {
     artObjCache = similarObjCache;
   }
+  console.log('switched to: ', searchType);
+  console.log('artObjCache === randomObjCache', !!(artObjCache === randomObjCache));
+  console.log('artObjCache === similarObjCache', !!(artObjCache === similarObjCache));
 
   // mark only clicked one as selected
   for (var i = 0; i < $searchTypeChipsContainer.children.length; i++) {
@@ -517,6 +556,18 @@ function handleSelectionChipClick(event) {
       $searchTypeChipsContainer.children[i].classList.add('chips-main-selected');
     } else {
       $searchTypeChipsContainer.children[i].classList.remove('chips-main-selected');
+    }
+  }
+
+  // If selection's cache doesn't have full cache, start pulling
+  // If first result is slow to pull, should one from the other cache if possible?
+  if (artObjCache.length < cacheItemsNum) {
+    for (i = artObjCache.length; i < cacheItemsNum; i++) {
+      console.log('%cgetting new artwork because of selection click', 'color:white; background-color:darkgreen');
+      console.log('i:', i);
+      console.log('cacheItemsNum: ', cacheItemsNum);
+      console.log('artObjCache: ', artObjCache);
+      getArtwork(false, searchType);
     }
   }
 }
