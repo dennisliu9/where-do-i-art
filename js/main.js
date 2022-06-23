@@ -8,10 +8,11 @@ var metEndpoint = 'https://collectionapi.metmuseum.org/public/collection/v1/';
 var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
-var randomObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var similarObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var artObjCache = randomObjCache; // points to either random cache or similar cache
-var cacheItemsNum = 10;
+// var randomObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
+// var similarObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
+// var artObjCache = randomObjCache; // points to either random cache or similar cache
+var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
+var cacheItemsNum = 3;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
@@ -306,6 +307,7 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   data - global
   artObjCache - global
   */
+  console.log('acquiring artObj, request loaded');
   metArtObj = acquireRequest.response;
 
   metArtObj.departmentId = deptId;
@@ -323,7 +325,9 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
       // If this is the first time running, go straight to showing it rather than caching it
       setImage(metArtObj);
     } else {
-      artObjCache.push(metArtObj);
+      // artObjCache.push(metArtObj);
+      // put new objects at the front so switching to different selectType starts taking place sooner
+      artObjCache.unshift(metArtObj);
     }
   } else {
     searchResultsIdx++;
@@ -356,6 +360,7 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   data - global
   */
 
+  console.log('search request response received');
   metSearchResults = searchRequest.response;
 
   console.log('%cmetSearchResults: ', 'color: white; background-color: orange; padding: 2px;', metSearchResults);
@@ -366,7 +371,7 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
     // debugger;
     getArtwork(false, searchType);
 
-    // exit out of the if because this metSearchResults is no longer useful
+    // exit out of the function call because this metSearchResults is no longer useful
     return;
   }
 
@@ -387,6 +392,9 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   // if we exhausted the list of id's, pull again
   if (searchResultsIdx >= metSearchResults.objectIDs.length) {
     getArtwork(false, searchType);
+
+    // exit out of the function call because this metSearchResults is no longer useful
+    return;
   }
 
   // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
@@ -444,6 +452,7 @@ function getArtwork(isStart, searchType) {
   searchRequest.addEventListener('load', function (event) {
     handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, randDept);
   });
+  console.log('searchRequest sending');
   searchRequest.send();
 }
 
@@ -541,14 +550,14 @@ function handleSelectionChipClick(event) {
   searchType = event.target.dataset.searchType;
 
   // switch cache
-  if (searchType === 'random') {
-    artObjCache = randomObjCache;
-  } else if (searchType === 'similar') {
-    artObjCache = similarObjCache;
-  }
+  // if (searchType === 'random') {
+  //   artObjCache = randomObjCache;
+  // } else if (searchType === 'similar') {
+  //   artObjCache = similarObjCache;
+  // }
   console.log('switched to: ', searchType);
-  console.log('artObjCache === randomObjCache', !!(artObjCache === randomObjCache));
-  console.log('artObjCache === similarObjCache', !!(artObjCache === similarObjCache));
+  // console.log('artObjCache === randomObjCache', !!(artObjCache === randomObjCache));
+  // console.log('artObjCache === similarObjCache', !!(artObjCache === similarObjCache));
 
   // mark only clicked one as selected
   for (var i = 0; i < $searchTypeChipsContainer.children.length; i++) {
@@ -561,15 +570,15 @@ function handleSelectionChipClick(event) {
 
   // If selection's cache doesn't have full cache, start pulling
   // If first result is slow to pull, should one from the other cache if possible?
-  if (artObjCache.length < cacheItemsNum) {
-    for (i = artObjCache.length; i < cacheItemsNum; i++) {
-      console.log('%cgetting new artwork because of selection click', 'color:white; background-color:darkgreen');
-      console.log('i:', i);
-      console.log('cacheItemsNum: ', cacheItemsNum);
-      console.log('artObjCache: ', artObjCache);
-      getArtwork(false, searchType);
-    }
-  }
+  // if (artObjCache.length < cacheItemsNum) {
+  //   for (i = artObjCache.length; i < cacheItemsNum; i++) {
+  //     console.log('%cgetting new artwork because of selection click', 'color:white; background-color:darkgreen');
+  //     console.log('i:', i);
+  //     console.log('cacheItemsNum: ', cacheItemsNum);
+  //     console.log('artObjCache: ', artObjCache);
+  //     getArtwork(false, searchType);
+  //   }
+  // }
 }
 
 function addObjToMetadata(artObj, metadataProperty) {
@@ -698,14 +707,24 @@ function generateSearchURL(numProps, numVals) {
       searchURL += '&artistOrCulture=true';
       qQuery = '&q=' + valuesToSearch[key][0];
     } else if (key === 'medium') {
-      // handle complex mediums with split
+      // handle complex medium values (can have multiple separated by commas)
+      var outputMediumStr = '';
+      var splitMediums = valuesToSearch[key][0].split(',');
+      // Stop at first three mediums, some works can have many more but they are too specific to search on
+      // API is expecting '...&medium=Silk|Metal|Pine&q=...
+      for (var i = 0; i < splitMediums.length && i < 3; i++) {
+        splitMediums[i] = splitMediums[i].replace(' ', '');
+        outputMediumStr += splitMediums[i][0].toUpperCase() + splitMediums[i].slice(1).toLowerCase();
+        outputMediumStr += '|';
+      }
+      searchURL += '&medium=' + outputMediumStr.slice(0, -1);
     } else {
       searchURL += '&' + key + '=' + valuesToSearch[key][0];
     }
   }
 
   searchURL += qQuery;
-
+  console.log('searchURL: ', searchURL);
   // console.log('searchURL: ', searchURL);
   return searchURL;
   /*
