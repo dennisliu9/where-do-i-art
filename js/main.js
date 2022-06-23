@@ -97,6 +97,9 @@ $showSomething.addEventListener('click', function (event) {
 
 $dislikeButton.addEventListener('click', function (event) {
   event.preventDefault();
+  if ($dislikeButton.classList.contains('button-main-disabled')) {
+    return;
+  }
   // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
 
@@ -112,6 +115,9 @@ $dislikeButton.addEventListener('click', function (event) {
 
 $likeButton.addEventListener('click', function (event) {
   event.preventDefault();
+  if ($likeButton.classList.contains('button-main-disabled')) {
+    return;
+  }
   data.likedObjects.push(displayArtObj);
   addObjToMetadata(displayArtObj, 'likedMetadata');
   appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
@@ -247,6 +253,22 @@ function startup() {
     getArtwork(true, searchType);
   });
   getMetDeptsRequest.send();
+
+  // Enable Like/Dislike buttons if artObjCache has at least one record
+  function enableLikeButtons() {
+    if (artObjCache.length !== 0) {
+      $likeButton.classList.add('button-main');
+      $dislikeButton.classList.add('button-main');
+      $likeButton.classList.remove('button-main-disabled');
+      $dislikeButton.classList.remove('button-main-disabled');
+    } else if (artObjCache.length === 0) {
+      $likeButton.classList.add('button-main-disabled');
+      $dislikeButton.classList.add('button-main-disabled');
+      $likeButton.classList.remove('button-main');
+      $dislikeButton.classList.remove('button-main');
+    }
+  }
+  setInterval(enableLikeButtons, 100);
 }
 
 function getMetDepartments() {
