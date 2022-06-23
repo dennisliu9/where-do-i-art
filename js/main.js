@@ -634,7 +634,7 @@ function getSearchValues(searchParams, numVals) {
       currentSearchParam = (Math.random() < 0.5) ? 'objectBeginDate' : 'objectEndDate';
     }
 
-    if (Object.keys(metadata.likedMetadata.geoLocation).includes(currentSearchParam)) {
+    if (metadata.likedMetadata.geoLocation[currentSearchParam] !== undefined) {
       for (paramVal in metadata.likedMetadata.geoLocation[currentSearchParam]) { // e.g. paramVal = 'Tokyo'
         if (paramVal === 'null') {
           continue;
@@ -643,7 +643,7 @@ function getSearchValues(searchParams, numVals) {
           fullValues.push(paramVal);
         }
       }
-    } else if (Object.keys(metadata.likedMetadata.date).includes(currentSearchParam)) {
+    } else if (metadata.likedMetadata.date[currentSearchParam] !== undefined) {
       for (paramVal in metadata.likedMetadata.date[currentSearchParam]) { // e.g. paramVal = '1842'
         if (paramVal === 'null') {
           continue;
@@ -671,7 +671,6 @@ function getSearchValues(searchParams, numVals) {
 
 function generateSearchURL(numProps, numVals) {
   var valuesToSearch = getSearchValues(getSearchTerms(numProps), numVals);
-  var possibleGeoLocationProps = Object.keys(metadata.likedMetadata.geoLocation);
   // number of years to look back if year is before...
   var dateSearchRanges = {
     0: 500,
@@ -686,7 +685,7 @@ function generateSearchURL(numProps, numVals) {
 
   // currently using simplified solution with just 1 property, 1 value
   for (var key in valuesToSearch) {
-    if (possibleGeoLocationProps.includes(key)) {
+    if (metadata.likedMetadata.geoLocation[key] !== undefined) {
       searchURL += '&geoLocation=' + valuesToSearch[key][0];
     } else if (['artistDisplayName', 'culture'].includes(key)) {
       searchURL += '&artistOrCulture=true';
@@ -703,7 +702,7 @@ function generateSearchURL(numProps, numVals) {
         outputMediumStr += '|';
       }
       searchURL += '&medium=' + outputMediumStr.slice(0, -1);
-    } else if (Object.keys(metadata.likedMetadata.date).includes(key)) {
+    } else if (metadata.likedMetadata.date[key] !== undefined) {
       var flooredDate = 100 * Math.floor(valuesToSearch[key][0] / 100);
       var adjustmentAmt = 0;
       var startDate;
