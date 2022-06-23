@@ -266,6 +266,7 @@ function metSearch(deptId, specificURL) {
   } else {
     getUrl = metEndpoint + 'objects?departmentIds=' + deptId;
   }
+  console.log('%cgetUrl:', 'color: lime; background-color: black; padding: 3px; text-decoration: none;', getUrl);
   var searchXhr = new XMLHttpRequest();
   searchXhr.open('GET', getUrl);
   searchXhr.responseType = 'json';
@@ -307,7 +308,7 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   data - global
   artObjCache - global
   */
-  console.log('acquiring artObj, request loaded');
+  console.log('%chandleAcquireResponse() called', 'color: white; background-color: navy; padding: 3px');
   metArtObj = acquireRequest.response;
 
   metArtObj.departmentId = deptId;
@@ -331,6 +332,7 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
     }
   } else {
     searchResultsIdx++;
+    console.log('no image on this object, searchResultsIdx is now: ', searchResultsIdx);
     handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
   }
 }
@@ -360,14 +362,14 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   data - global
   */
 
-  console.log('search request response received');
+  console.log('%chandleSearchResponse() called', 'color: white; background-color: darkgreen; padding: 3px');
   metSearchResults = searchRequest.response;
 
   console.log('%cmetSearchResults: ', 'color: white; background-color: orange; padding: 2px;', metSearchResults);
   // objectIDs is null when there are 0 results
   if (metSearchResults.objectIDs === null) {
     // if no results, pull again
-    // console.log('%c metSearchResults.objectIDs was null, pulling again', 'color: white; background-color: red; padding: 3px;');
+    console.log('%c No results, pulling again', 'color: white; background-color: red; padding: 3px;');
     // debugger;
     getArtwork(false, searchType);
 
@@ -444,15 +446,15 @@ function getArtwork(isStart, searchType) {
     searchRequest = metSearch(randDept);
   }
 
-  console.log('similarURL: ', similarURL);
-  console.log('randDept: ', randDept);
+  // console.log('similarURL: ', similarURL);
+  // console.log('randDept: ', randDept);
 
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
   var areResultsShuffled = false;
   searchRequest.addEventListener('load', function (event) {
     handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, randDept);
   });
-  console.log('searchRequest sending');
+  console.log('%csearchRequest sending, calling API', 'color: white; background-color: red; padding: 3px;');
   searchRequest.send();
 }
 
@@ -615,11 +617,6 @@ function addObjToMetadata(artObj, metadataProperty) {
   }
 }
 
-/*
-var likeParam_numOfProperties = 3;
-var likeParam_numOfValues = 2;
-*/
-
 function getSearchTerms(numProps) {
   /* CURRENTLY SPECIFIC TO likedMetadata ONLY */
   var searchParams = [];
@@ -665,6 +662,8 @@ function getSearchValues(searchParams, numVals) {
       currentSearchParam = shuffleArray(Object.keys(metadata.likedMetadata.geoLocation))[0];
     }
 
+    // TODO: If it's date, replace it with either startDate or endDate
+
     if (Object.keys(metadata.likedMetadata.geoLocation).includes(currentSearchParam)) {
       for (paramVal in metadata.likedMetadata.geoLocation[currentSearchParam]) { // e.g. paramVal = 'Tokyo'
         if (paramVal === 'null') {
@@ -674,7 +673,9 @@ function getSearchValues(searchParams, numVals) {
           fullValues.push(paramVal);
         }
       }
-    } else {
+    }
+    // TODO: else if it's one of the date values (start/endDate), add as normal (startDate: {1843: 2; 1845: 6; 1922: 2...})
+    else {
       for (paramVal in metadata.likedMetadata[currentSearchParam]) { // e.g. paramVal = 'Vincent van Gogh'
         if (paramVal === 'null') {
           continue;
@@ -694,8 +695,9 @@ function getSearchValues(searchParams, numVals) {
 function generateSearchURL(numProps, numVals) {
   var valuesToSearch = getSearchValues(getSearchTerms(numProps), numVals);
   var possibleGeoLocationProps = Object.keys(metadata.likedMetadata.geoLocation);
+  // TODO: create a lookup for year ranges
 
-  // console.log('valuesToSearch', valuesToSearch);
+  console.log('valuesToSearch', valuesToSearch);
   var searchURL = metEndpoint + 'search?hasImages=true';
   var qQuery = '&q=*';
 
@@ -718,14 +720,16 @@ function generateSearchURL(numProps, numVals) {
         outputMediumStr += '|';
       }
       searchURL += '&medium=' + outputMediumStr.slice(0, -1);
-    } else {
+    }
+
+    // TODO: else if it's a date value
+
+    else {
       searchURL += '&' + key + '=' + valuesToSearch[key][0];
     }
   }
 
   searchURL += qQuery;
-  console.log('searchURL: ', searchURL);
-  // console.log('searchURL: ', searchURL);
   return searchURL;
   /*
   getUrl = metEndpoint + 'search?' +

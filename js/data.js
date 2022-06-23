@@ -26,8 +26,12 @@ var metadata = {
       country: {},
       region: {},
       subregion: {}
+    },
+    date: {
+      dateBegin: {},
+      dateEnd: {}
     }
-    // dateBegin and dateEnd later
+
   }
 };
 
