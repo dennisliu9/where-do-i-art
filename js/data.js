@@ -28,8 +28,8 @@ var metadata = {
       subregion: {}
     },
     date: {
-      dateBegin: {},
-      dateEnd: {}
+      objectBeginDate: {},
+      objectEndDate: {}
     }
 
   }

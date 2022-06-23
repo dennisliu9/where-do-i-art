@@ -12,7 +12,7 @@ var metArtObj = {};
 // var similarObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
 // var artObjCache = randomObjCache; // points to either random cache or similar cache
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 3;
+var cacheItemsNum = 5;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
@@ -99,6 +99,9 @@ $dislikeButton.addEventListener('click', function (event) {
   event.preventDefault();
   // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
+
+  // TODO: prevent below operations from happening if artObjCache is empty
+
   // retrieve the next from cache list
   nextArtObj = artObjCache.shift();
   // fetch another artwork to replace the missing one
@@ -112,6 +115,8 @@ $likeButton.addEventListener('click', function (event) {
   data.likedObjects.push(displayArtObj);
   addObjToMetadata(displayArtObj, 'likedMetadata');
   appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
+
+  // TODO: prevent below operations from happening if artObjCache is empty
   nextArtObj = artObjCache.shift();
   getArtwork(false, searchType);
   setImage(nextArtObj);
@@ -601,6 +606,19 @@ function addObjToMetadata(artObj, metadataProperty) {
           likedMetadataPropertyObj[newValue] = 1;
         }
       }
+    } else if (artProperty === 'date') {
+      for (var dateProperty in metadata[metadataProperty].date) {
+        likedMetadataPropertyObj = metadata[metadataProperty].date[dateProperty];
+        newValue = artObj[dateProperty];
+        if (newValue === '') {
+          newValue = 'null';
+        }
+        if (newValue in likedMetadataPropertyObj) {
+          likedMetadataPropertyObj[newValue] += 1;
+        } else {
+          likedMetadataPropertyObj[newValue] = 1;
+        }
+      }
     } else {
       likedMetadataPropertyObj = metadata[metadataProperty][artProperty]; // object storing possible values as keys, counts as values, e.g. {true: 0, false: 0}
       newValue = String(artObj[artProperty]); // value of current property in the passed in artObj, e.g. "Vincent van Gogh"
@@ -662,7 +680,10 @@ function getSearchValues(searchParams, numVals) {
       currentSearchParam = shuffleArray(Object.keys(metadata.likedMetadata.geoLocation))[0];
     }
 
-    // TODO: If it's date, replace it with either startDate or endDate
+    // If we selected date, use either dateBegin or dateEnd
+    if (currentSearchParam === 'date') {
+      currentSearchParam = (Math.random() < 0.5) ? 'objectBeginDate' : 'objectEndDate';
+    }
 
     if (Object.keys(metadata.likedMetadata.geoLocation).includes(currentSearchParam)) {
       for (paramVal in metadata.likedMetadata.geoLocation[currentSearchParam]) { // e.g. paramVal = 'Tokyo'
@@ -673,9 +694,16 @@ function getSearchValues(searchParams, numVals) {
           fullValues.push(paramVal);
         }
       }
-    }
-    // TODO: else if it's one of the date values (start/endDate), add as normal (startDate: {1843: 2; 1845: 6; 1922: 2...})
-    else {
+    } else if (Object.keys(metadata.likedMetadata.date).includes(currentSearchParam)) {
+      for (paramVal in metadata.likedMetadata.date[currentSearchParam]) { // e.g. paramVal = '1842'
+        if (paramVal === 'null') {
+          continue;
+        }
+        for (j = 0; j < metadata.likedMetadata.date[currentSearchParam][paramVal]; j++) {
+          fullValues.push(paramVal);
+        }
+      }
+    } else {
       for (paramVal in metadata.likedMetadata[currentSearchParam]) { // e.g. paramVal = 'Vincent van Gogh'
         if (paramVal === 'null') {
           continue;
@@ -695,7 +723,14 @@ function getSearchValues(searchParams, numVals) {
 function generateSearchURL(numProps, numVals) {
   var valuesToSearch = getSearchValues(getSearchTerms(numProps), numVals);
   var possibleGeoLocationProps = Object.keys(metadata.likedMetadata.geoLocation);
-  // TODO: create a lookup for year ranges
+  // number of years to look back if year is before...
+  var dateSearchRanges = {
+    0: 500,
+    1300: 200,
+    1800: 100,
+    1900: 50,
+    3030: 20
+  };
 
   console.log('valuesToSearch', valuesToSearch);
   var searchURL = metEndpoint + 'search?hasImages=true';
@@ -720,11 +755,30 @@ function generateSearchURL(numProps, numVals) {
         outputMediumStr += '|';
       }
       searchURL += '&medium=' + outputMediumStr.slice(0, -1);
-    }
+    } else if (Object.keys(metadata.likedMetadata.date).includes(key)) {
+      var flooredDate = 100 * Math.floor(valuesToSearch[key][0] / 100);
+      var adjustmentAmt = 0;
+      var startDate;
+      var endDate;
+      for (var dateKey in dateSearchRanges) {
+        if (flooredDate <= dateKey) {
+          adjustmentAmt = dateSearchRanges[dateKey];
+          break;
+        }
+      }
+      if (key === 'objectBeginDate') {
+        startDate = flooredDate;
+        endDate = flooredDate + adjustmentAmt;
 
-    // TODO: else if it's a date value
+      } else if (key === 'objectEndDate') {
+        startDate = flooredDate - adjustmentAmt;
+        endDate = flooredDate;
+      }
 
-    else {
+      searchURL += '&dateBegin=' + startDate + '&dateEnd=' + endDate;
+      console.log('date query: ', searchURL);
+
+    } else {
       searchURL += '&' + key + '=' + valuesToSearch[key][0];
     }
   }
