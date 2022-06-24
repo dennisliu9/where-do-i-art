@@ -32,6 +32,28 @@
     </div>
   </header>
   <main>
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-container" class="z-level-6 modal-container">
+      <div id="delete-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-col ai-center jc-center modal-padding">
+        <div class="container bg-color-white padding-t-3 padding-b-3 round-border">
+          <div class="row ff-headers jc-center padding-b-1 text-center">
+            <h4>Are you sure you want to remove this from My Likes?</h4>
+          </div>
+          <div class="text-center">
+            <!-- likely need some sort of sizing class on this -->
+            <img id="delete-image" class="fully-contained" src="images/imageplaceholder.PNG" alt="Placeholder image">
+          </div>
+          <div class="row jc-space-even padding-t-3 padding-b-1">
+            <a id="delete-confirm-button" class="button-main dislike-button ff-main text-center" href="#">
+              <span class="no-mobile">&nbsp;I'm not feeling it anymore.</span>
+            </a>
+            <a id="delete-cancel-button" class="button-main like-button ff-main text-center" href="#">
+              <span class="no-mobile">&nbsp;Keep it!</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Detail Modal -->
     <div id="detail-container" class="z-level-6 modal-container hidden">
       <div id="detail-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-col ai-center jc-center modal-padding">
