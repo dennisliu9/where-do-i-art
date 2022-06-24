@@ -1,3 +1,5 @@
+/* global data, metadata */
+
 //           //
 // variables //
 //           //
@@ -7,9 +9,12 @@ var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 10;
+var cacheItemsNum = 1;
 var displayArtObj = {};
 var nextArtObj = {};
+var searchType = 'random';
+var similarNumOfProperties = 1; // for simplicity, sticking with 1 value from 1 department from now
+var similarNumOfValues = 1;
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -30,6 +35,9 @@ var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-butt
 var $detailModalContainer = document.querySelector('#detail-container');
 var $detailModalImage = document.querySelector('#detail-image');
 
+// need some way to detect clicks on the group
+var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
+
 //                                            //
 // event listeners (that aren't in functions) //
 //                                            //
@@ -47,30 +55,38 @@ $showSomething.addEventListener('click', function (event) {
   // (future optimization point)
   // When clicked, grab one and set it immediately
   swapView(event.target.dataset.viewLink);
-  // Then start building cache of images
+  // Then start building cache of images for both caches
+  // Start with selected option
   for (var i = 1; i <= cacheItemsNum; i++) {
-    getArtwork();
+    getArtwork(false, searchType);
   }
 });
 
 $dislikeButton.addEventListener('click', function (event) {
   event.preventDefault();
+  if ($dislikeButton.classList.contains('button-main-disabled')) {
+    return;
+  }
   // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
   // retrieve the next from cache list
   nextArtObj = artObjCache.shift();
   // fetch another artwork to replace the missing one
-  getArtwork();
+  getArtwork(false, searchType);
   // show the next object while the next artwork is being fetched
   setImage(nextArtObj);
 });
 
 $likeButton.addEventListener('click', function (event) {
   event.preventDefault();
+  if ($likeButton.classList.contains('button-main-disabled')) {
+    return;
+  }
   data.likedObjects.push(displayArtObj);
+  addObjToMetadata(displayArtObj, 'likedMetadata');
   appendImageToGallery(renderImage(displayArtObj), $bottomSheetGallery);
   nextArtObj = artObjCache.shift();
-  getArtwork();
+  getArtwork(false, searchType);
   setImage(nextArtObj);
 });
 
@@ -101,6 +117,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
 });
 
 window.addEventListener('click', handleImageClick);
+
+$searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
 //           //
 // functions //
@@ -173,6 +191,9 @@ function startup() {
   // Render Liked images into gallery
   renderAllLiked();
 
+  // Add metadata for all Liked images
+  addAllToMetadata(data.likedObjects, 'likedMetadata');
+
   // Get departments, assuming departments will not change in single session
   // (but may change in the future)
 
@@ -191,35 +212,47 @@ function startup() {
     $showSomething.classList.remove('button-main-disabled');
 
     // Pull first image to be shown immediately
-    getArtwork(true);
+    getArtwork(true, searchType);
   });
   getMetDeptsRequest.send();
+
+  // Enable Like/Dislike buttons if artObjCache has at least one record
+  function enableLikeButtons() {
+    if (artObjCache.length !== 0) {
+      $likeButton.classList.add('button-main');
+      $dislikeButton.classList.add('button-main');
+      $likeButton.classList.remove('button-main-disabled');
+      $dislikeButton.classList.remove('button-main-disabled');
+    } else if (artObjCache.length === 0) {
+      $likeButton.classList.add('button-main-disabled');
+      $dislikeButton.classList.add('button-main-disabled');
+      $likeButton.classList.remove('button-main');
+      $dislikeButton.classList.remove('button-main');
+    }
+  }
+  setInterval(enableLikeButtons, 100);
 }
 
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
   deptXhr.open('GET', metEndpoint + 'departments');
   deptXhr.responseType = 'json';
-  // deptXhr.addEventListener('load', function (event) {
-  //   metDepts = deptXhr.response.departments;
-  // });
-  // deptXhr.send();
+
   return deptXhr;
 }
 
 // Functions for searching and returning art objects
 
-function metSearch(deptId, query) {
+function metSearch(deptId, specificURL) {
   // sets up the XHR but still waiting for onload function and sending
+  // if specificURL is supplied, deptID has no effect
   var getUrl = '';
-  if (query !== undefined) {
-    getUrl = metEndpoint + 'search?' +
-      'hasImages=true' +
-      '&departmentId=' + deptId +
-      '&q=' + query;
+  if (specificURL !== undefined) {
+    getUrl = specificURL;
   } else {
     getUrl = metEndpoint + 'objects?departmentIds=' + deptId;
   }
+  getUrl = getUrl.replace(' ', '%20');
   var searchXhr = new XMLHttpRequest();
   searchXhr.open('GET', getUrl);
   searchXhr.responseType = 'json';
@@ -236,7 +269,7 @@ function metAcquireArt(objectId) {
   return acquireXhr;
 }
 
-function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest) {
+function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest, areResultsShuffled, deptId) {
   /*
   handleAcquireResponse:
     (runs once acquireRequest has loaded)
@@ -262,22 +295,39 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   artObjCache - global
   */
   metArtObj = acquireRequest.response;
-  // Store the acquired object ID so we know we've seen it already
-  data.shownObjectIds.push(metArtObj.objectID);
+
+  if (deptId === -1) {
+    // look up to get department id
+    if (data.departmentLookup[metArtObj.department] !== undefined) {
+      metArtObj.departmentId = data.departmentLookup[metArtObj.department];
+    } else {
+      metArtObj.departmentId = -1; // keep -1 for now, backfill in the future
+    }
+  } else {
+    metArtObj.departmentId = deptId;
+    // Add department and departmentID to lookup object, because these end up differing from metDepts
+    // This is assuming a department name is only ever associated with departmentID (unverified assumption)
+    if (data.departmentLookup[metArtObj.department] === undefined) {
+      data.departmentLookup[metArtObj.department] = deptId;
+    }
+  }
+
   if (metArtObj.primaryImage !== '') {
     if (isStart) {
       // If this is the first time running, go straight to showing it rather than caching it
       setImage(metArtObj);
     } else {
-      artObjCache.push(metArtObj);
+      // artObjCache.push(metArtObj);
+      // put new objects at the front so switching to different selectType starts taking place sooner
+      artObjCache.unshift(metArtObj);
     }
   } else {
     searchResultsIdx++;
-    handleSearchResponse(searchRequest, searchResultsIdx, isStart); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId); // This will use the new value of searchResultsIdx since handleSearchResponse calls searchResultsIdx from a higher scope than itself
   }
 }
 
-function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled) {
+function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId) {
   /*
   handleSearchResponse:
     (runs once searchRequest has loaded)
@@ -301,37 +351,48 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   metSearchResults - global
   data - global
   */
-
   metSearchResults = searchRequest.response;
+
+  // objectIDs is null when there are 0 results
+  if (metSearchResults.objectIDs === null) {
+    // if no results, pull again
+    getArtwork(false, searchType);
+    // exit out of the function call because this metSearchResults is no longer useful
+    return;
+  }
+
   // Prevent extraneous reshuffling
   if (areResultsShuffled === false) {
     metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
     areResultsShuffled = true;
   }
-  if (metSearchResults.objectIDs === null) {
-    // if results were bad, exit for now
-    return 'Error: metSearchResults.objectIDs was null';
-  } else if (searchResultsIdx >= metSearchResults.objectIDs.length) {
-    // if we exhausted the list of id's, pull again
-    getArtwork();
-  }
 
   var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
-  // if this artwork been shown already, skip it
-  while (data.shownObjectIds.includes(currentObjId)) {
+
+  // If this artwork been shown already, skip it
+  while (data.shownObjectIds.includes(currentObjId) && searchResultsIdx < metSearchResults.objectIDs.length) {
     searchResultsIdx++;
     currentObjId = metSearchResults.objectIDs[searchResultsIdx];
   }
 
+  // if we exhausted the list of id's, pull again
+  if (searchResultsIdx >= metSearchResults.objectIDs.length) {
+    getArtwork(false, searchType);
+    // exit out of the function call because this metSearchResults is no longer useful
+    return;
+  }
+
   // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
   var acquireRequest = metAcquireArt(currentObjId);
+  // Store the acquired object ID so we know we've seen it already
+  data.shownObjectIds.push(currentObjId);
   acquireRequest.addEventListener('load', function (event) {
-    handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest);
+    handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest, areResultsShuffled, deptId);
   });
   acquireRequest.send();
 }
 
-function getArtwork(isStart) {
+function getArtwork(isStart, searchType) {
   /*
   getArtwork:
     (runs when any of the three main buttons are clicked)
@@ -339,14 +400,14 @@ function getArtwork(isStart) {
   if they have an accessible URL. When isStart=true, the artwork will be immediately displayed
   and not put into artObjCache
 
-  > note: assuming that an entire department will always have at least one object with an accessible image
-    aka, we will never reach the end of the objectIDs array
-    This will **not** hold true when the results are more narrow
-
   Check if the preload cache has enough objects
     If so, don't run this
-  Get the index for a random department
-  Set up a search request for the random department
+  Check if type of search is similar or random
+    If similar
+      Generate a search URL and pass it into metSearch() to generate the XHR for a similar search
+    If it's random
+      Get the index for a random department
+      Set up a search request for the random department
   Instantiate an index i at 0 for going through the array of results
   Set up a load event listener for the search results to handle the response when it arrives
   Send the request
@@ -355,13 +416,25 @@ function getArtwork(isStart) {
     // Don't keep sending requests if the cache is full, prevent button spamming to abuse API
     return;
   }
-  var randDept = Math.floor(Math.random() * metDepts.length);
-  // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
-  var searchRequest = metSearch(metDepts[randDept].departmentId);
+
+  var searchRequest;
+  var deptId;
+  if (searchType === 'similar') {
+    // generate URL and stuff
+    var similarURL = generateSearchURL(similarNumOfProperties, similarNumOfValues);
+    deptId = -1;
+    searchRequest = metSearch(deptId, similarURL);
+  } else {
+    var randDeptIdx = Math.floor(Math.random() * metDepts.length);
+    // Department id's are not continuous, some are missing (from 1 - 21, 2 and 20 are missing). Access by index
+    deptId = metDepts[randDeptIdx].departmentId;
+    searchRequest = metSearch(deptId);
+  }
+
   var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
   var areResultsShuffled = false;
   searchRequest.addEventListener('load', function (event) {
-    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled);
+    handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId);
   });
   searchRequest.send();
 }
@@ -408,7 +481,7 @@ function renderImage(artObj) {
 }
 
 function appendImageToGallery($imgContainer, $gallery) {
-  $gallery.appendChild($imgContainer);
+  $gallery.prepend($imgContainer);
 }
 
 function renderAllLiked() {
@@ -449,6 +522,218 @@ function handleImageClick(event) {
     // Detail image was click, open the full res in a new window/tab
 
     this.window.open(data.viewingInDetail.primaryImage, '_blank');
+  }
+}
+
+function handleSelectionChipClick(event) {
+  if (event.target.tagName !== 'BUTTON') {
+    return;
+  }
+  // assign global variable
+  searchType = event.target.dataset.searchType;
+
+  // mark only clicked one as selected
+  for (var i = 0; i < $searchTypeChipsContainer.children.length; i++) {
+    if (event.target === $searchTypeChipsContainer.children[i]) {
+      $searchTypeChipsContainer.children[i].classList.add('chips-main-selected');
+    } else {
+      $searchTypeChipsContainer.children[i].classList.remove('chips-main-selected');
+    }
+  }
+}
+
+function addObjToMetadata(artObj, metadataProperty) {
+  for (var artProperty in metadata[metadataProperty]) {
+    var likedMetadataPropertyObj;
+    var newValue;
+    // handle nested geoLocation properties
+    if (artProperty === 'geoLocation') {
+      for (var geoProperty in metadata[metadataProperty].geoLocation) {
+        likedMetadataPropertyObj = metadata[metadataProperty].geoLocation[geoProperty];
+        newValue = artObj[geoProperty];
+        if (newValue === '') {
+          newValue = 'null';
+        }
+        if (newValue in likedMetadataPropertyObj) {
+          likedMetadataPropertyObj[newValue] += 1;
+        } else {
+          likedMetadataPropertyObj[newValue] = 1;
+        }
+      }
+    } else if (artProperty === 'date') {
+      for (var dateProperty in metadata[metadataProperty].date) {
+        likedMetadataPropertyObj = metadata[metadataProperty].date[dateProperty];
+        newValue = artObj[dateProperty];
+        if (newValue === '') {
+          newValue = 'null';
+        }
+        if (newValue in likedMetadataPropertyObj) {
+          likedMetadataPropertyObj[newValue] += 1;
+        } else {
+          likedMetadataPropertyObj[newValue] = 1;
+        }
+      }
+    } else {
+      likedMetadataPropertyObj = metadata[metadataProperty][artProperty]; // object storing possible values as keys, counts as values, e.g. {true: 0, false: 0}
+      newValue = String(artObj[artProperty]); // value of current property in the passed in artObj, e.g. "Vincent van Gogh"
+      if (newValue === '') {
+        newValue = 'null';
+      }
+
+      if (newValue in likedMetadataPropertyObj) {
+        likedMetadataPropertyObj[newValue] += 1;
+      } else {
+        likedMetadataPropertyObj[newValue] = 1;
+      }
+    }
+  }
+}
+
+function getSearchTerms(numProps) {
+  /* CURRENTLY SPECIFIC TO likedMetadata ONLY */
+  var searchParams = [];
+  var availableParams = Object.keys(metadata.likedMetadata);
+  availableParams = shuffleArray(availableParams);
+
+  // if numProps > availableParams.length, all are sliced
+  searchParams = availableParams.slice(0, numProps);
+
+  return searchParams;
+}
+
+function getSearchValues(searchParams, numVals) {
+  /*
+  CURRENTLY SPECIFIC TO likedMetadata ONLY
+  Declare empty dictionary to hold the parameter and the values for that parameter to search on
+  Loop through each parameter (artistName, medium, etc.) in searchParams
+    Declare an empty array to store the value of a key as many times as the value to that key
+    Loop through each parameter's keys ("Pablo Picasso", "Claude Monet", etc.)
+      Loop from i=0 to value number
+        Push the value each time
+    Once array is full with representation weighted representation
+      Shuffle the array
+      pick numVals from it by slicing
+      remove duplicates with [...new Set(array)]
+      Assign sliced values to dictionary under parameter key
+  return dictionary
+  */
+  var searchVals = {};
+  for (var i = 0; i < searchParams.length; i++) {
+    var fullValues = [];
+    var currentSearchParam = searchParams[i]; // e.g. currentSearchParam = 'artistDisplayName'
+    var paramVal;
+    var j;
+
+    // If we selected geoLocation, we want to use a specific kind of geoLocation (city, country, region, etc)
+    if (currentSearchParam === 'geoLocation') {
+      currentSearchParam = shuffleArray(Object.keys(metadata.likedMetadata.geoLocation))[0];
+    }
+
+    // If we selected date, use either dateBegin or dateEnd
+    if (currentSearchParam === 'date') {
+      currentSearchParam = (Math.random() < 0.5) ? 'objectBeginDate' : 'objectEndDate';
+    }
+
+    if (metadata.likedMetadata.geoLocation[currentSearchParam] !== undefined) {
+      for (paramVal in metadata.likedMetadata.geoLocation[currentSearchParam]) { // e.g. paramVal = 'Tokyo'
+        if (paramVal === 'null') {
+          continue;
+        }
+        for (j = 0; j < metadata.likedMetadata.geoLocation[currentSearchParam][paramVal]; j++) {
+          fullValues.push(paramVal);
+        }
+      }
+    } else if (metadata.likedMetadata.date[currentSearchParam] !== undefined) {
+      for (paramVal in metadata.likedMetadata.date[currentSearchParam]) { // e.g. paramVal = '1842'
+        if (paramVal === 'null') {
+          continue;
+        }
+        for (j = 0; j < metadata.likedMetadata.date[currentSearchParam][paramVal]; j++) {
+          fullValues.push(paramVal);
+        }
+      }
+    } else {
+      for (paramVal in metadata.likedMetadata[currentSearchParam]) { // e.g. paramVal = 'Vincent van Gogh'
+        if (paramVal === 'null') {
+          continue;
+        }
+        for (j = 0; j < metadata.likedMetadata[currentSearchParam][paramVal]; j++) { // e.g. ...[paramVal] = 23
+          fullValues.push(paramVal);
+        }
+      }
+    }
+    // Create an object with keys of the metadata type and values of arrays of the unique metadata values to search
+    // e.g. {artistDisplayName = ['van Gogh', 'Monet'], medium = ['oil', 'watercolor'] }
+    searchVals[currentSearchParam] = [...new Set(shuffleArray(fullValues).slice(0, numVals))];
+  }
+  return searchVals;
+}
+
+function generateSearchURL(numProps, numVals) {
+  var valuesToSearch = getSearchValues(getSearchTerms(numProps), numVals);
+  // number of years to look back if year is before...
+  var dateSearchRanges = {
+    0: 500,
+    1300: 200,
+    1800: 100,
+    1900: 50,
+    3030: 20
+  };
+
+  var searchURL = metEndpoint + 'search?hasImages=true';
+  var qQuery = '&q=*';
+
+  // currently using simplified solution with just 1 property, 1 value
+  for (var key in valuesToSearch) {
+    if (metadata.likedMetadata.geoLocation[key] !== undefined) {
+      searchURL += '&geoLocation=' + valuesToSearch[key][0];
+    } else if (['artistDisplayName', 'culture'].includes(key)) {
+      searchURL += '&artistOrCulture=true';
+      qQuery = '&q=' + valuesToSearch[key][0];
+    } else if (key === 'medium') {
+      // handle complex medium values (can have multiple separated by commas)
+      var outputMediumStr = '';
+      var splitMediums = valuesToSearch[key][0].split(',');
+      // Stop at first three mediums, some works can have many more but they are too specific to search on
+      // API is expecting '...&medium=Silk|Metal|Pine&q=...
+      for (var i = 0; i < splitMediums.length && i < 3; i++) {
+        splitMediums[i] = splitMediums[i].replace(' ', '');
+        outputMediumStr += splitMediums[i][0].toUpperCase() + splitMediums[i].slice(1).toLowerCase();
+        outputMediumStr += '|';
+      }
+      searchURL += '&medium=' + outputMediumStr.slice(0, -1);
+    } else if (metadata.likedMetadata.date[key] !== undefined) {
+      var flooredDate = 100 * Math.floor(valuesToSearch[key][0] / 100);
+      var adjustmentAmt = 0;
+      var startDate;
+      var endDate;
+      for (var dateKey in dateSearchRanges) {
+        if (flooredDate <= dateKey) {
+          adjustmentAmt = dateSearchRanges[dateKey];
+          break;
+        }
+      }
+      if (key === 'objectBeginDate') {
+        startDate = flooredDate;
+        endDate = flooredDate + adjustmentAmt;
+      } else if (key === 'objectEndDate') {
+        startDate = flooredDate - adjustmentAmt;
+        endDate = flooredDate;
+      }
+      searchURL += '&dateBegin=' + startDate + '&dateEnd=' + endDate;
+    } else {
+      searchURL += '&' + key + '=' + valuesToSearch[key][0];
+    }
+  }
+
+  searchURL += qQuery;
+  return searchURL;
+}
+
+// Temporary function until metadata is persisted to local storage
+function addAllToMetadata(artObjArray, metadataProperty) {
+  for (var i = 0; i < artObjArray.length; i++) {
+    addObjToMetadata(artObjArray[i], metadataProperty);
   }
 }
 

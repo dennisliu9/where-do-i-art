@@ -57,7 +57,7 @@
     </div>
     <!-- Main App Screen -->
     <div id="main-app-area" class="height-full-no-header-no-bottom inner-scroll ">
-      <div class="container height-inherit" data-view="landing">
+      <div class="container" data-view="landing">
         <div class="row flex-wrap-on text-center">
           <!-- Div below used to have margin-top 5rem on desktop, margin-top 3rem on mobile-->
           <div class="col-full padding-t-3-mobile">
@@ -68,19 +68,28 @@
           </div>
         </div>
       </div>
-      <div class="container padding-t-3 padding-b-3 height-inherit hidden" data-view="selection">
+      <div class="container padding-t-3 padding-b-3 hidden" data-view="selection">
         <div class="row jc-center">
           <div class="img-main text-center">
             <img id="display-image" src="images/imageplaceholder.PNG" alt="Image Loading">
           </div>
         </div>
         <div class="row jc-space-even padding-t-3 padding-b-1">
-          <a id="dislike-button" class="button-main ff-main text-center" href="#">
+          <a id="dislike-button" class="button-main-disabled dislike-button ff-main text-center" href="#">
             <span class="no-mobile">&nbsp;I'm not feeling it</span>
           </a>
-          <a id="like-button" class="button-main ff-main text-center" href="#">
+          <a id="like-button" class="button-main-disabled like-button ff-main text-center" href="#">
             <span class="no-mobile">&nbsp;I like it!</span>
           </a>
+        </div>
+      </div>
+      <div id="selection-type-buttons" class="container padding-t-3">
+        <div class="row ff-headers jc-center padding-b-1 text-center">
+          <h4>Next artwork should be something...</h4>
+        </div>
+        <div id="search-type-chips" class="row jc-center">
+          <button class="chips-main chips-main-selected ff-main margin-r-20p margin-l-20p" data-search-type="random">Random</button>
+          <button class="chips-main ff-main margin-l-20p margin-r-20p" data-search-type="similar">Similar to My Likes</button>
         </div>
       </div>
     </div>

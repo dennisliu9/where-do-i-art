@@ -188,21 +188,6 @@ h5 {
   height: var(--bottom-header-height);
 }
 
-.button-main-disabled {
-  text-decoration: none;
-  background-color: var(--color-light-grey);
-  color: var(--color-grey);
-  border: 3px var(--color-light-grey) solid;
-  border-radius: 50px;
-  padding: 1rem 2rem;
-  font-size: 15px;
-  font-weight: 700;
-  width: 271px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .button-main {
   text-decoration: none;
   border: 3px var(--color-accent) solid;
@@ -227,8 +212,27 @@ h5 {
 }
 
 .chips-main {
+  cursor: pointer;
   font-size: 14px;
+  border: 1px solid var(--color-grey);
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border-radius: 50px;
+  padding: 0.75rem 3rem;
 }
+
+.chips-main-selected {
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-light);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.chips-main:hover {
+  filter: brightness(1.1) saturate(150%);
+}
+
+/* add .chips-main:active behavior */
 
 .img-main {
   height: 424px;
@@ -324,19 +328,19 @@ img:hover {
   -webkit-font-smoothing: antialiased;
 }
 
-#dislike-button {
+.dislike-button {
   border-color: var(--color-no);
   background-color: var(--color-white);
   color: var(--color-no);
 }
 
-#dislike-button:active {
+.dislike-button:not(.button-main-disabled):active {
   border: 3px var(--color-no) solid;
   background-color: var(--color-no);
   color: var(--color-white);
 }
 
-#dislike-button::before {
+.dislike-button::before {
   font: var(--fa-font-solid);
   content: "\f00d";
 
@@ -350,19 +354,19 @@ img:hover {
   */
 }
 
-#like-button {
+.like-button {
   border-color: var(--color-yes);
   background-color: var(--color-yes);
   color: var(--color-white);
 }
 
-#like-button:active {
+.like-button:not(.button-main-disabled):active {
   border: 3px var(--color-yes) solid;
   background-color: var(--color-white);
   color: var(--color-yes);
 }
 
-#like-button::before {
+.like-button::before {
   font: var(--fa-font-solid);
   content: "\f00c";
 
@@ -372,6 +376,21 @@ img:hover {
   f004 is heart
   f164 is thumbs up
   */
+}
+
+.button-main-disabled {
+  text-decoration: none;
+  background-color: var(--color-light-grey);
+  color: var(--color-grey);
+  border: 3px var(--color-light-grey) solid;
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  font-size: 15px;
+  font-weight: 700;
+  width: 271px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Media Queries */
@@ -454,8 +473,8 @@ img:hover {
     padding: 20px;
   }
 
-  #dislike-button,
-  #like-button {
+  .dislike-button,
+  .like-button {
     width: 30vw;
     min-width: 210px;
   }
@@ -504,8 +523,8 @@ img:hover {
     padding: 10px;
   }
 
-  #dislike-button,
-  #like-button {
+  .dislike-button,
+  .like-button {
     width: 120px;
     height: 120px;
     min-width: 120px;
@@ -513,8 +532,8 @@ img:hover {
     padding: 1rem;
   }
 
-  #dislike-button::before,
-  #like-button::before {
+  .dislike-button::before,
+  .like-button::before {
     font-size: 40px;
   }
 
@@ -523,6 +542,6 @@ img:hover {
   }
 
   .minimized {
-    transform: translateY(calc((100vh - (var(--header-height) + 67px))));
+    transform: translateY(calc((100% - (var(--header-height) + 67px))));
   }
 }
