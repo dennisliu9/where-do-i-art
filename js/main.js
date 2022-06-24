@@ -40,6 +40,7 @@ var $detailModalImage = document.querySelector('#detail-image');
 var $deleteModalContainer = document.querySelector('#delete-container');
 var $deleteModalImage = document.querySelector('#delete-image');
 var $deletingGalleryImage;
+var $deleteConfirmButton = document.querySelector('#delete-confirm-button');
 
 // need some way to detect clicks on the group
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
@@ -126,6 +127,19 @@ $bottomSheetHeader.addEventListener('click', function (event) {
 });
 
 window.addEventListener('click', handleImageClick);
+
+$deleteConfirmButton.addEventListener('click', function (event) {
+  // Move object from data.likedObjects to data.dislikedObjects
+  var idxOfDeletion = data.likedObjects.indexOf(data.deleting);
+  var deleteObj = data.likedObjects.splice(idxOfDeletion, 1)[0];
+  data.dislikedObjects.push(deleteObj);
+  $deletingGalleryImage.remove();
+  data.deleting = null;
+  $deletingGalleryImage = null;
+
+  // Hide the delete modal when done
+  $deleteModalContainer.classList.add('hidden');
+});
 
 $searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
@@ -545,7 +559,6 @@ function handleImageClick(event) {
       addImageToImg(data.deleting, $deleteModalImage, false);
       $deleteModalContainer.classList.remove('hidden');
       $deletingGalleryImage = event.target.closest('div');
-      // TODO: delete $deletingGalleryImage on confirmation
     }
   // something other than an image (excl detail-image) was clicked
   } else if (event.target.id === 'detail-overlay') {
@@ -555,11 +568,11 @@ function handleImageClick(event) {
   } else if (event.target.id === 'detail-image') {
     // Detail image was clicked, open the full res in a new window/tab
     this.window.open(data.viewingInDetail.primaryImage, '_blank');
-  } else if (event.target.id === 'delete-overlay') {
+  } else if (event.target.id === 'delete-overlay' || event.target.id === 'delete-cancel-button') {
     // Close the delete modal
     $deleteModalContainer.classList.add('hidden');
-    // toggleDeleteMode(false);
     data.deleting = null;
+    $deletingGalleryImage = null;
   } else if (event.target.id === 'delete-image') {
     // Image to be deleted was clicked, show user high res to decide
     this.window.open(data.deleting.primaryImage, '_blank');
