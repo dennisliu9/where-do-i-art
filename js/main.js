@@ -9,7 +9,7 @@ var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 1;
+var cacheItemsNum = 5;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
@@ -29,7 +29,8 @@ var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
-var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
+// var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
+var $bottomSheetButtons = document.querySelector('#bottom-sheet-buttons');
 var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
 
 var $detailModalContainer = document.querySelector('#detail-container');
@@ -98,7 +99,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.add('minimized');
     $bottomSheet.classList.add('no-scroll');
     $bottomSheet.classList.remove('inner-scroll');
-    $bottomSheetCloseButton.classList.add('invisible');
+    $bottomSheetButtons.classList.add('invisible');
+    // $bottomSheetCloseButton.classList.add('invisible');
     $bottomSheetExpandButton.textContent = 'expand_less';
     $mainAppArea.classList.remove('no-scroll');
     $mainAppArea.classList.add('inner-scroll');
@@ -109,7 +111,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.remove('minimized');
     $bottomSheet.classList.remove('no-scroll');
     $bottomSheet.classList.add('inner-scroll');
-    $bottomSheetCloseButton.classList.remove('invisible');
+    // $bottomSheetCloseButton.classList.remove('invisible');
+    $bottomSheetButtons.classList.remove('invisible');
     $bottomSheetExpandButton.textContent = 'expand_more';
     $mainAppArea.classList.add('no-scroll');
     $mainAppArea.classList.remove('inner-scroll');
