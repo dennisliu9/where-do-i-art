@@ -37,6 +37,9 @@ var $bottomSheetDeleteModeButton = document.querySelector('#bottom-sheet-delete-
 var $detailModalContainer = document.querySelector('#detail-container');
 var $detailModalImage = document.querySelector('#detail-image');
 
+var $deleteModalContainer = document.querySelector('#delete-container');
+var $deleteModalImage = document.querySelector('#delete-image');
+
 // need some way to detect clicks on the group
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
 
@@ -501,33 +504,92 @@ function renderAllLiked() {
 }
 
 function handleImageClick(event) {
-  if (event.target.tagName === 'IMG' && event.target.id !== 'detail-image') {
-    // Image was clicked, now see it in detail
+  // $deleteModalContainer
+  // $deleteModalImage
 
-    // find image object of image that was clicked and put it in viewingInDetail
-    if (event.target.id === 'display-image') {
-      data.viewingInDetail = displayArtObj;
-    } else {
-      for (var i = 0; i < data.likedObjects.length; i++) {
-        if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
-          data.viewingInDetail = data.likedObjects[i];
+  if (event.target.tagName === 'IMG' && !['detail-image', 'delete-image'].includes(event.target.id)) {
+    // Check if Delete Mode is active
+    // In theory, Delete Mode cannot be active when the bottom sheet is closed
+    // We don't need to worry about clicking display-image when Delete Mode is on
+    if (deleteMode === false) {
+      // Delete Mode off, show detail modal
+
+      // Put the selected image's data into data.viewingInDetail
+      if (event.target.id === 'display-image') {
+        // clicked on the image being decided
+        data.viewingInDetail = displayArtObj;
+      } else {
+        // clicked on an image in the Likes gallery
+        for (var i = 0; i < data.likedObjects.length; i++) {
+          if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
+            data.viewingInDetail = data.likedObjects[i];
+          }
         }
       }
-    }
 
-    // Point detail img to the image url
-    // Setting requestFullSize to false for now, images are VERY large
-    addImageToImg(data.viewingInDetail, $detailModalImage, false);
-    $detailModalContainer.classList.remove('hidden');
+      // Point detail img to the selected image's url
+      // Setting requestFullSize to false, images are VERY large
+      addImageToImg(data.viewingInDetail, $detailModalImage, false);
+      $detailModalContainer.classList.remove('hidden');
+    } else if (deleteMode === true) {
+      // Delete Mode on, show delete modal
+
+      // Put the selected image's data into data.deleting
+      for (var d = 0; d < data.likedObjects.length; d++) {
+        if (String(data.likedObjects[d].objectID) === String(event.target.getAttribute('objectId'))) {
+          data.deleting = data.likedObjects[d];
+        }
+      }
+
+      // Point delete img to the selected image's url
+      addImageToImg(data.deleting, $deleteModalImage, false);
+      $deleteModalContainer.classList.remove('hidden');
+    }
+  // something other than an image (excl detail-image) was clicked
   } else if (event.target.id === 'detail-overlay') {
     // Outside of detail image was clicked, close the detail modal
     $detailModalContainer.classList.add('hidden');
     data.viewingInDetail = null;
   } else if (event.target.id === 'detail-image') {
-    // Detail image was click, open the full res in a new window/tab
-
+    // Detail image was clicked, open the full res in a new window/tab
     this.window.open(data.viewingInDetail.primaryImage, '_blank');
+  } else if (event.target.id === 'delete-overlay') {
+    // Close the delete modal
+    $deleteModalContainer.classList.add('hidden');
+    // toggleDeleteMode(false);
+    data.deleting = null;
+  } else if (event.target.id === 'delete-image') {
+    // Image to be deleted was clicked, show user high res to decide
+    this.window.open(data.deleting.primaryImage, '_blank');
   }
+
+  // if not, then check if delete mode is on
+  // Ideally, they can click on the image in the delete modal and still get the **detail** modal
+  // assign the object and index to something in data
+  // query the corresponding DOM object to potentially remove it
+  // addImagetoImg for delete-image
+  // unhide the delete modal
+
+  // Image was clicked, now see it in detail
+
+  // find image object of image that was clicked and put it in viewingInDetail
+  // if (event.target.id === 'display-image') {
+  //   // clicked on the image being decided
+  //   data.viewingInDetail = displayArtObj;
+  // } else {
+  //   // clicked on an image in the Likes gallery
+  //   for (var i = 0; i < data.likedObjects.length; i++) {
+  //     if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
+  //       data.viewingInDetail = data.likedObjects[i];
+  //     }
+  //   }
+  // }
+
+  // // Point detail img to the image url
+  // // Setting requestFullSize to false for now, images are VERY large
+  // addImageToImg(data.viewingInDetail, $detailModalImage, false);
+  // $detailModalContainer.classList.remove('hidden');
+
 }
 
 function handleSelectionChipClick(event) {

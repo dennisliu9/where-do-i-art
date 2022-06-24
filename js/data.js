@@ -7,6 +7,7 @@ var data = {
   likedObjects: [],
   dislikedObjects: [],
   viewingInDetail: null,
+  deleting: null,
   departmentLookup: {} // used to store department names from responses along with the id used to find it (these do not match the departments query)
 };
 var metadata = {
