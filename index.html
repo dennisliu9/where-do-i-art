@@ -42,20 +42,23 @@
     <div id="delete-container" class="z-level-5 modal-container hidden">
       <div id="delete-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-col ai-center jc-center modal-padding">
         <div class="container bg-color-white padding-t-3 padding-b-3 round-border modal-padding">
-          <div class="row ff-headers jc-center padding-b-1 text-center">
+          <div class="row ff-headers jc-center padding-b-1 padding-t-1-mobile text-center">
             <h4>Are you sure you want to remove this from My Likes?</h4>
           </div>
-          <div class="text-center">
-            <!-- likely need some sort of sizing class on this -->
-            <img id="delete-image" class="img-gallery-container" src="images/imageplaceholder.PNG" alt="Placeholder image">
+          <div class="row jc-center text-center img-gallery-container">
+            <img id="delete-image" src="images/imageplaceholder.PNG" alt="Placeholder image">
           </div>
-          <div class="row jc-space-even padding-t-3 padding-b-1">
-            <a id="delete-confirm-button" class="button-main dislike-button ff-main text-center" href="#">
-              <span class="no-mobile">&nbsp;I'm not feeling it anymore.</span>
-            </a>
-            <a id="delete-cancel-button" class="button-main like-button ff-main text-center" href="#">
-              <span class="no-mobile">&nbsp;Keep it!</span>
-            </a>
+          <div class="row flex-wrap-on jc-space-even padding-t-3 padding-b-1">
+            <div class="col-1-2 flex-col jc-center">
+              <a id="delete-confirm-button" class="button-main dislike-button delete-dialog-button ff-main text-center margin-b-30p" href="#">
+                <span>&nbsp;I'm not feeling it anymore.</span>
+              </a>
+            </div>
+            <div class="col-1-2 flex-col jc-center">
+              <a id="delete-cancel-button" class="button-main like-button delete-dialog-button ff-main text-center margin-b-30p" href="#">
+                <span>&nbsp;Keep it!</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -98,10 +101,10 @@
           </div>
         </div>
         <div class="row jc-space-even padding-t-3 padding-b-1">
-          <a id="dislike-button" class="button-main-disabled dislike-button ff-main text-center" href="#">
+          <a id="dislike-button" class="button-main-disabled dislike-button ff-main text-center circular-button-mobile" href="#">
             <span class="no-mobile">&nbsp;I'm not feeling it</span>
           </a>
-          <a id="like-button" class="button-main-disabled like-button ff-main text-center" href="#">
+          <a id="like-button" class="button-main-disabled like-button ff-main text-center circular-button-mobile" href="#">
             <span class="no-mobile">&nbsp;I like it!</span>
           </a>
         </div>

@@ -39,6 +39,7 @@ var $detailModalImage = document.querySelector('#detail-image');
 
 var $deleteModalContainer = document.querySelector('#delete-container');
 var $deleteModalImage = document.querySelector('#delete-image');
+var $deletingGalleryImage;
 
 // need some way to detect clicks on the group
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
@@ -504,9 +505,6 @@ function renderAllLiked() {
 }
 
 function handleImageClick(event) {
-  // $deleteModalContainer
-  // $deleteModalImage
-
   if (event.target.tagName === 'IMG' && !['detail-image', 'delete-image'].includes(event.target.id)) {
     // Check if Delete Mode is active
     // In theory, Delete Mode cannot be active when the bottom sheet is closed
@@ -546,6 +544,8 @@ function handleImageClick(event) {
       // Point delete img to the selected image's url
       addImageToImg(data.deleting, $deleteModalImage, false);
       $deleteModalContainer.classList.remove('hidden');
+      $deletingGalleryImage = event.target.closest('div');
+      // TODO: delete $deletingGalleryImage on confirmation
     }
   // something other than an image (excl detail-image) was clicked
   } else if (event.target.id === 'detail-overlay') {

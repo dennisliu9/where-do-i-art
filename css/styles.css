@@ -154,12 +154,20 @@ h5 {
   margin-right: 20px;
 }
 
+.margin-b-30p {
+  margin-bottom: 30px;
+}
+
 .padding-t-3 {
   padding-top: 3rem;
 }
 
 .padding-t-3-mobile {
   padding-top: 5rem;
+}
+
+.padding-t-1-mobile {
+  padding-top: initial;
 }
 
 .padding-b-3 {
@@ -527,6 +535,10 @@ img:hover {
     padding-top: 3rem;
   }
 
+  .padding-t-1-mobile {
+    padding-top: 1rem;
+  }
+
   .button-main:hover {
     /* Do not brighten on mobile, hover not always implemented */
     filter: brightness(1);
@@ -555,8 +567,7 @@ img:hover {
     padding: 10px;
   }
 
-  .dislike-button,
-  .like-button {
+  .circular-button-mobile {
     width: 120px;
     height: 120px;
     min-width: 120px;
@@ -564,9 +575,12 @@ img:hover {
     padding: 1rem;
   }
 
-  .dislike-button::before,
-  .like-button::before {
+  .circular-button-mobile::before {
     font-size: 40px;
+  }
+
+  .delete-dialog-button {
+    width: 90%;
   }
 
   .override-height-92 {
