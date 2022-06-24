@@ -538,6 +538,8 @@ function handleImageClick(event) {
       for (var d = 0; d < data.likedObjects.length; d++) {
         if (String(data.likedObjects[d].objectID) === String(event.target.getAttribute('objectId'))) {
           data.deleting = data.likedObjects[d];
+          // do something here to store the DOM object to be deleted?
+          // check where in code the liked images are appended to gallery
         }
       }
 
@@ -562,34 +564,6 @@ function handleImageClick(event) {
     // Image to be deleted was clicked, show user high res to decide
     this.window.open(data.deleting.primaryImage, '_blank');
   }
-
-  // if not, then check if delete mode is on
-  // Ideally, they can click on the image in the delete modal and still get the **detail** modal
-  // assign the object and index to something in data
-  // query the corresponding DOM object to potentially remove it
-  // addImagetoImg for delete-image
-  // unhide the delete modal
-
-  // Image was clicked, now see it in detail
-
-  // find image object of image that was clicked and put it in viewingInDetail
-  // if (event.target.id === 'display-image') {
-  //   // clicked on the image being decided
-  //   data.viewingInDetail = displayArtObj;
-  // } else {
-  //   // clicked on an image in the Likes gallery
-  //   for (var i = 0; i < data.likedObjects.length; i++) {
-  //     if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
-  //       data.viewingInDetail = data.likedObjects[i];
-  //     }
-  //   }
-  // }
-
-  // // Point detail img to the image url
-  // // Setting requestFullSize to false for now, images are VERY large
-  // addImageToImg(data.viewingInDetail, $detailModalImage, false);
-  // $detailModalContainer.classList.remove('hidden');
-
 }
 
 function handleSelectionChipClick(event) {
