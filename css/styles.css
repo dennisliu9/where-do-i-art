@@ -488,6 +488,15 @@ img:hover {
     width: 30vw;
     min-width: 210px;
   }
+
+  .icon-button {
+    padding: initial;
+  }
+
+  .icon-button:hover {
+    background-color: initial;
+    border-radius: initial;
+  }
 }
 
 @media only screen and (max-width: 450px) {
@@ -517,6 +526,15 @@ img:hover {
   .button-main:hover {
     /* Do not brighten on mobile, hover not always implemented */
     filter: brightness(1);
+  }
+
+  .icon-button {
+    padding: initial;
+  }
+
+  .icon-button:hover {
+    background-color: initial;
+    border-radius: initial;
   }
 
   .img-main {
