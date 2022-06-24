@@ -108,6 +108,14 @@ h5 {
   color: var(--color-white);
 }
 
+.color-grey {
+  color: var(--color-grey);
+}
+
+.color-accent {
+  color: var(--color-accent);
+}
+
 .drop-shadow {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14);
 }
@@ -245,13 +253,15 @@ h5 {
 }
 
 .icon-button {
-  color: var(--color-grey);
-
-  /* height: 30px; */
+  /* prevent highlighting icons when clicking quickly */
+  user-select: none;
+  padding: 5px;
 }
 
 .icon-button:hover {
   cursor: pointer;
+  background-color: var(--color-light-grey);
+  border-radius: 50px;
 }
 
 .img-gallery-container {

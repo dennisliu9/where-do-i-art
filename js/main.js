@@ -15,6 +15,7 @@ var nextArtObj = {};
 var searchType = 'random';
 var similarNumOfProperties = 1; // for simplicity, sticking with 1 value from 1 department from now
 var similarNumOfValues = 1;
+var deleteMode = false;
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -29,9 +30,9 @@ var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
-// var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
 var $bottomSheetButtons = document.querySelector('#bottom-sheet-buttons');
 var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
+var $bottomSheetDeleteModeButton = document.querySelector('#bottom-sheet-delete-mode-button');
 
 var $detailModalContainer = document.querySelector('#detail-container');
 var $detailModalImage = document.querySelector('#detail-image');
@@ -100,10 +101,12 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.add('no-scroll');
     $bottomSheet.classList.remove('inner-scroll');
     $bottomSheetButtons.classList.add('invisible');
-    // $bottomSheetCloseButton.classList.add('invisible');
     $bottomSheetExpandButton.textContent = 'expand_less';
     $mainAppArea.classList.remove('no-scroll');
     $mainAppArea.classList.add('inner-scroll');
+    toggleDeleteMode(false);
+  } else if (event.target.tagName === 'SPAN' && ['delete_forever'].includes(event.target.textContent)) {
+    toggleDeleteMode();
   } else {
     // open bottom sheet
     $bottomSheet.classList.remove('light-round-border');
@@ -111,7 +114,6 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.remove('minimized');
     $bottomSheet.classList.remove('no-scroll');
     $bottomSheet.classList.add('inner-scroll');
-    // $bottomSheetCloseButton.classList.remove('invisible');
     $bottomSheetButtons.classList.remove('invisible');
     $bottomSheetExpandButton.textContent = 'expand_more';
     $mainAppArea.classList.add('no-scroll');
@@ -737,6 +739,22 @@ function generateSearchURL(numProps, numVals) {
 function addAllToMetadata(artObjArray, metadataProperty) {
   for (var i = 0; i < artObjArray.length; i++) {
     addObjToMetadata(artObjArray[i], metadataProperty);
+  }
+}
+
+function toggleDeleteMode(deleteBool) {
+  if (deleteBool === undefined || deleteBool === null) {
+    deleteMode = !deleteMode;
+  } else {
+    deleteMode = deleteBool;
+  }
+
+  if (deleteMode === false) {
+    $bottomSheetDeleteModeButton.classList.add('color-grey');
+    $bottomSheetDeleteModeButton.classList.remove('color-accent');
+  } else {
+    $bottomSheetDeleteModeButton.classList.add('color-accent');
+    $bottomSheetDeleteModeButton.classList.remove('color-grey');
   }
 }
 
