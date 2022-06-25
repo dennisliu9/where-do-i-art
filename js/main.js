@@ -16,6 +16,7 @@ var searchType = 'random';
 var similarNumOfProperties = 1; // for simplicity, sticking with 1 value from 1 department from now
 var similarNumOfValues = 1;
 var deleteMode = false;
+var deleteModeInfoBoxTimerId;
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -41,6 +42,7 @@ var $deleteModalContainer = document.querySelector('#delete-container');
 var $deleteModalImage = document.querySelector('#delete-image');
 var $deletingGalleryImage;
 var $deleteConfirmButton = document.querySelector('#delete-confirm-button');
+var $deleteModeInfoBox = document.querySelector('#delete-mode-info');
 
 // need some way to detect clicks on the group
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
@@ -111,7 +113,14 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $mainAppArea.classList.add('inner-scroll');
     toggleDeleteMode(false);
   } else if (event.target.tagName === 'SPAN' && ['delete_forever'].includes(event.target.textContent)) {
+    // turn on delete mode
+    clearInterval(deleteModeInfoBoxTimerId);
     toggleDeleteMode();
+    // show box and set timer to hide it
+    $deleteModeInfoBox.classList.remove('invisible');
+    $deleteModeInfoBox.textContent = updateDeleteInfoBox();
+    deleteModeInfoBoxTimerId = setTimeout(hideDeleteModeInfoBox, 1000);
+
   } else {
     // open bottom sheet
     $bottomSheet.classList.remove('light-round-border');
@@ -805,6 +814,21 @@ function toggleDeleteMode(deleteBool) {
     $bottomSheetDeleteModeButton.classList.add('color-accent');
     $bottomSheetDeleteModeButton.classList.remove('color-grey');
   }
+}
+
+function updateDeleteInfoBox() {
+  var deleteModeStatusText = 'Delete Mode ';
+  if (deleteMode === true) {
+    deleteModeStatusText += 'On';
+  } else {
+    deleteModeStatusText += 'Off';
+  }
+  return deleteModeStatusText;
+}
+
+function hideDeleteModeInfoBox() {
+  // to be called by setTimeout
+  $deleteModeInfoBox.classList.add('invisible');
 }
 
 //           //

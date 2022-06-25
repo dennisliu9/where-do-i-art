@@ -71,6 +71,13 @@
   right: 0;
 }
 
+.pos-fixed-page-center {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%);
+}
+
 .z-level-6 {
   position: relative;
   z-index: 6;
