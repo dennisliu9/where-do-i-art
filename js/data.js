@@ -37,7 +37,13 @@ var metadata = {
 };
 
 if (localStorage.getItem(localStorageKey) !== null) {
-  data = JSON.parse(localStorage.getItem(localStorageKey));
+  var referenceDataKeys = Object.keys(data);
+  var tmpData = JSON.parse(localStorage.getItem(localStorageKey));
+  if (JSON.stringify(referenceDataKeys) === JSON.stringify(Object.keys(tmpData))) {
+    // Only load data from storage if the keys in storage match what the program now needs
+    // TODO: This is a TERRIBLE solution as users will lose their Likes between versions!
+    data = tmpData;
+  }
 }
 
 window.addEventListener('beforeunload', function (event) {

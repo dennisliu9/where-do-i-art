@@ -349,7 +349,6 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
       // If this is the first time running, go straight to showing it rather than caching it
       setImage(metArtObj);
     } else {
-      // artObjCache.push(metArtObj);
       // put new objects at the front so switching to different selectType starts taking place sooner
       artObjCache.unshift(metArtObj);
     }
@@ -452,7 +451,7 @@ function getArtwork(isStart, searchType) {
   var searchRequest;
   var deptId;
   if (searchType === 'similar') {
-    // generate URL and stuff
+    // generate URL and search request
     var similarURL = generateSearchURL(similarNumOfProperties, similarNumOfValues);
     deptId = -1;
     searchRequest = metSearch(deptId, similarURL);
