@@ -9,12 +9,14 @@ var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 1;
+var cacheItemsNum = 5;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
 var similarNumOfProperties = 1; // for simplicity, sticking with 1 value from 1 department from now
 var similarNumOfValues = 1;
+var deleteMode = false;
+var deleteModeInfoBoxTimerId;
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -29,11 +31,18 @@ var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
 var $bottomSheetGallery = document.querySelector('#bottom-sheet-gallery');
 var $bottomSheetHeaderText = document.querySelector('#bottom-sheet-header-text');
-var $bottomSheetCloseButton = document.querySelector('#bottom-sheet-close-button');
+var $bottomSheetButtons = document.querySelector('#bottom-sheet-buttons');
 var $bottomSheetExpandButton = document.querySelector('#bottom-sheet-expand-button');
+var $bottomSheetDeleteModeButton = document.querySelector('#bottom-sheet-delete-mode-button');
 
 var $detailModalContainer = document.querySelector('#detail-container');
 var $detailModalImage = document.querySelector('#detail-image');
+
+var $deleteModalContainer = document.querySelector('#delete-container');
+var $deleteModalImage = document.querySelector('#delete-image');
+var $deletingGalleryImage;
+var $deleteConfirmButton = document.querySelector('#delete-confirm-button');
+var $deleteModeInfoBox = document.querySelector('#delete-mode-info');
 
 // need some way to detect clicks on the group
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
@@ -98,10 +107,20 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.add('minimized');
     $bottomSheet.classList.add('no-scroll');
     $bottomSheet.classList.remove('inner-scroll');
-    $bottomSheetCloseButton.classList.add('invisible');
+    $bottomSheetButtons.classList.add('invisible');
     $bottomSheetExpandButton.textContent = 'expand_less';
     $mainAppArea.classList.remove('no-scroll');
     $mainAppArea.classList.add('inner-scroll');
+    toggleDeleteMode(false);
+  } else if (event.target.tagName === 'SPAN' && ['delete_forever'].includes(event.target.textContent)) {
+    // turn on delete mode
+    clearTimeout(deleteModeInfoBoxTimerId);
+    toggleDeleteMode();
+    // show box and set timer to hide it
+    $deleteModeInfoBox.classList.remove('invisible');
+    $deleteModeInfoBox.textContent = updateDeleteInfoBox();
+    deleteModeInfoBoxTimerId = setTimeout(hideDeleteModeInfoBox, 1000);
+
   } else {
     // open bottom sheet
     $bottomSheet.classList.remove('light-round-border');
@@ -109,7 +128,7 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $bottomSheet.classList.remove('minimized');
     $bottomSheet.classList.remove('no-scroll');
     $bottomSheet.classList.add('inner-scroll');
-    $bottomSheetCloseButton.classList.remove('invisible');
+    $bottomSheetButtons.classList.remove('invisible');
     $bottomSheetExpandButton.textContent = 'expand_more';
     $mainAppArea.classList.add('no-scroll');
     $mainAppArea.classList.remove('inner-scroll');
@@ -117,6 +136,19 @@ $bottomSheetHeader.addEventListener('click', function (event) {
 });
 
 window.addEventListener('click', handleImageClick);
+
+$deleteConfirmButton.addEventListener('click', function (event) {
+  // Move object from data.likedObjects to data.dislikedObjects
+  var idxOfDeletion = data.likedObjects.indexOf(data.deleting);
+  var deleteObj = data.likedObjects.splice(idxOfDeletion, 1)[0];
+  data.dislikedObjects.push(deleteObj);
+  $deletingGalleryImage.remove();
+  data.deleting = null;
+  $deletingGalleryImage = null;
+
+  // Hide the delete modal when done
+  $deleteModalContainer.classList.add('hidden');
+});
 
 $searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
@@ -317,7 +349,6 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
       // If this is the first time running, go straight to showing it rather than caching it
       setImage(metArtObj);
     } else {
-      // artObjCache.push(metArtObj);
       // put new objects at the front so switching to different selectType starts taking place sooner
       artObjCache.unshift(metArtObj);
     }
@@ -420,7 +451,7 @@ function getArtwork(isStart, searchType) {
   var searchRequest;
   var deptId;
   if (searchType === 'similar') {
-    // generate URL and stuff
+    // generate URL and search request
     var similarURL = generateSearchURL(similarNumOfProperties, similarNumOfValues);
     deptId = -1;
     searchRequest = metSearch(deptId, similarURL);
@@ -496,32 +527,63 @@ function renderAllLiked() {
 }
 
 function handleImageClick(event) {
-  if (event.target.tagName === 'IMG' && event.target.id !== 'detail-image') {
-    // Image was clicked, now see it in detail
+  if (event.target.tagName === 'IMG' && !['detail-image', 'delete-image'].includes(event.target.id)) {
+    // Check if Delete Mode is active
+    // In theory, Delete Mode cannot be active when the bottom sheet is closed
+    // We don't need to worry about clicking display-image when Delete Mode is on
+    if (deleteMode === false) {
+      // Delete Mode off, show detail modal
 
-    // find image object of image that was clicked and put it in viewingInDetail
-    if (event.target.id === 'display-image') {
-      data.viewingInDetail = displayArtObj;
-    } else {
-      for (var i = 0; i < data.likedObjects.length; i++) {
-        if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
-          data.viewingInDetail = data.likedObjects[i];
+      // Put the selected image's data into data.viewingInDetail
+      if (event.target.id === 'display-image') {
+        // clicked on the image being decided
+        data.viewingInDetail = displayArtObj;
+      } else {
+        // clicked on an image in the Likes gallery
+        for (var i = 0; i < data.likedObjects.length; i++) {
+          if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
+            data.viewingInDetail = data.likedObjects[i];
+            break;
+          }
         }
       }
-    }
 
-    // Point detail img to the image url
-    // Setting requestFullSize to false for now, images are VERY large
-    addImageToImg(data.viewingInDetail, $detailModalImage, false);
-    $detailModalContainer.classList.remove('hidden');
+      // Point detail img to the selected image's url
+      // Setting requestFullSize to false, images are VERY large
+      addImageToImg(data.viewingInDetail, $detailModalImage, false);
+      $detailModalContainer.classList.remove('hidden');
+    } else if (deleteMode === true) {
+      // Delete Mode on, show delete modal
+
+      // Put the selected image's data into data.deleting
+      for (var d = 0; d < data.likedObjects.length; d++) {
+        if (String(data.likedObjects[d].objectID) === String(event.target.getAttribute('objectId'))) {
+          data.deleting = data.likedObjects[d];
+          break;
+        }
+      }
+
+      // Point delete img to the selected image's url
+      addImageToImg(data.deleting, $deleteModalImage, false);
+      $deleteModalContainer.classList.remove('hidden');
+      $deletingGalleryImage = event.target.closest('div');
+    }
+  // something other than an image (excl detail-image) was clicked
   } else if (event.target.id === 'detail-overlay') {
     // Outside of detail image was clicked, close the detail modal
     $detailModalContainer.classList.add('hidden');
     data.viewingInDetail = null;
   } else if (event.target.id === 'detail-image') {
-    // Detail image was click, open the full res in a new window/tab
-
+    // Detail image was clicked, open the full res in a new window/tab
     this.window.open(data.viewingInDetail.primaryImage, '_blank');
+  } else if (event.target.id === 'delete-overlay' || event.target.id === 'delete-cancel-button') {
+    // Close the delete modal
+    $deleteModalContainer.classList.add('hidden');
+    data.deleting = null;
+    $deletingGalleryImage = null;
+  } else if (event.target.id === 'delete-image') {
+    // Image to be deleted was clicked, show user high res to decide
+    this.window.open(data.deleting.primaryImage, '_blank');
   }
 }
 
@@ -735,6 +797,37 @@ function addAllToMetadata(artObjArray, metadataProperty) {
   for (var i = 0; i < artObjArray.length; i++) {
     addObjToMetadata(artObjArray[i], metadataProperty);
   }
+}
+
+function toggleDeleteMode(deleteBool) {
+  if (deleteBool === undefined || deleteBool === null) {
+    deleteMode = !deleteMode;
+  } else {
+    deleteMode = deleteBool;
+  }
+
+  if (deleteMode === false) {
+    $bottomSheetDeleteModeButton.classList.add('color-grey');
+    $bottomSheetDeleteModeButton.classList.remove('color-accent');
+  } else {
+    $bottomSheetDeleteModeButton.classList.add('color-accent');
+    $bottomSheetDeleteModeButton.classList.remove('color-grey');
+  }
+}
+
+function updateDeleteInfoBox() {
+  var deleteModeStatusText = 'Delete Mode ';
+  if (deleteMode === true) {
+    deleteModeStatusText += 'On';
+  } else {
+    deleteModeStatusText += 'Off';
+  }
+  return deleteModeStatusText;
+}
+
+function hideDeleteModeInfoBox() {
+  // to be called by setTimeout
+  $deleteModeInfoBox.classList.add('invisible');
 }
 
 //           //

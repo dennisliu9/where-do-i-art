@@ -7,6 +7,7 @@ var data = {
   likedObjects: [],
   dislikedObjects: [],
   viewingInDetail: null,
+  deleting: null,
   departmentLookup: {} // used to store department names from responses along with the id used to find it (these do not match the departments query)
 };
 var metadata = {
@@ -35,8 +36,23 @@ var metadata = {
   }
 };
 
+function equalArrays(first, second) {
+  if (first.length !== second.length) return false;
+  for (var i = 0; i < first.length; i++) {
+    if (first[i] !== second[i]) return false;
+  }
+  return true;
+}
+
 if (localStorage.getItem(localStorageKey) !== null) {
-  data = JSON.parse(localStorage.getItem(localStorageKey));
+  var referenceDataKeys = Object.keys(data);
+  var tmpData = JSON.parse(localStorage.getItem(localStorageKey));
+  var tmpDataKeys = Object.keys(tmpData);
+  if (equalArrays(referenceDataKeys, tmpDataKeys)) {
+    // Only load data from storage if the keys in storage match what the program now needs
+    // TODO: This is a TERRIBLE solution as users will lose their Likes between versions!
+    data = tmpData;
+  }
 }
 
 window.addEventListener('beforeunload', function (event) {

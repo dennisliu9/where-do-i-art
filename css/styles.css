@@ -108,6 +108,14 @@ h5 {
   color: var(--color-white);
 }
 
+.color-grey {
+  color: var(--color-grey);
+}
+
+.color-accent {
+  color: var(--color-accent);
+}
+
 .drop-shadow {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14);
 }
@@ -123,6 +131,10 @@ h5 {
 
 .light-bottom-border {
   border-bottom: 1px solid var(--color-grey);
+}
+
+.round-border {
+  border-radius: 10px;
 }
 
 .margin-tb-3 {
@@ -142,12 +154,20 @@ h5 {
   margin-right: 20px;
 }
 
+.margin-b-30p {
+  margin-bottom: 30px;
+}
+
 .padding-t-3 {
   padding-top: 3rem;
 }
 
 .padding-t-3-mobile {
   padding-top: 5rem;
+}
+
+.padding-t-1-mobile {
+  padding-top: initial;
 }
 
 .padding-b-3 {
@@ -245,13 +265,15 @@ h5 {
 }
 
 .icon-button {
-  color: var(--color-grey);
-
-  /* height: 30px; */
+  /* prevent highlighting icons when clicking quickly */
+  user-select: none;
+  padding: 5px;
 }
 
 .icon-button:hover {
   cursor: pointer;
+  background-color: var(--color-light-grey);
+  border-radius: 50px;
 }
 
 .img-gallery-container {
@@ -478,6 +500,15 @@ img:hover {
     width: 30vw;
     min-width: 210px;
   }
+
+  .icon-button {
+    padding: initial;
+  }
+
+  .icon-button:hover {
+    background-color: initial;
+    border-radius: initial;
+  }
 }
 
 @media only screen and (max-width: 450px) {
@@ -504,9 +535,22 @@ img:hover {
     padding-top: 3rem;
   }
 
+  .padding-t-1-mobile {
+    padding-top: 1rem;
+  }
+
   .button-main:hover {
     /* Do not brighten on mobile, hover not always implemented */
     filter: brightness(1);
+  }
+
+  .icon-button {
+    padding: initial;
+  }
+
+  .icon-button:hover {
+    background-color: initial;
+    border-radius: initial;
   }
 
   .img-main {
@@ -523,8 +567,7 @@ img:hover {
     padding: 10px;
   }
 
-  .dislike-button,
-  .like-button {
+  .circular-button-mobile {
     width: 120px;
     height: 120px;
     min-width: 120px;
@@ -532,9 +575,12 @@ img:hover {
     padding: 1rem;
   }
 
-  .dislike-button::before,
-  .like-button::before {
+  .circular-button-mobile::before {
     font-size: 40px;
+  }
+
+  .delete-dialog-button {
+    width: 90%;
   }
 
   .override-height-92 {

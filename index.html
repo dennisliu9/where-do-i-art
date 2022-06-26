@@ -16,15 +16,15 @@
   <style>
     .material-symbols-outlined {
       font-variation-settings:
-        'FILL' 1,
-        'wght' 700,
+        'FILL' 0,
+        'wght' 400,
         'GRAD' 0,
         'opsz' 48
     }
   </style>
 </head>
 <body class="no-scroll">
-  <header class="z-level-5 drop-shadow">
+  <header class="z-level-4 drop-shadow">
     <div class="container flex-col ai-center fc-fstart override-height-64">
       <div class="row">
         <h2 id="top-logo" class="ff-headers margin-l-20p" data-view-link="landing">Where Do I.Art?</h2>
@@ -38,17 +38,47 @@
         <img id="detail-image" class="fully-contained" src="images/imageplaceholder.PNG" alt="Placeholder image">
       </div>
     </div>
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-container" class="z-level-5 modal-container hidden">
+      <div id="delete-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-col ai-center jc-center modal-padding">
+        <div class="container bg-color-white padding-t-3 padding-b-3 round-border modal-padding">
+          <div class="row ff-headers jc-center padding-b-1 padding-t-1-mobile text-center">
+            <h4>Are you sure you want to remove this from My Likes?</h4>
+          </div>
+          <div class="row jc-center text-center img-gallery-container">
+            <img id="delete-image" src="images/imageplaceholder.PNG" alt="Placeholder image">
+          </div>
+          <div class="row flex-wrap-on jc-space-even padding-t-3 padding-b-1">
+            <div class="col-1-2 flex-col jc-center">
+              <a id="delete-confirm-button" class="button-main dislike-button delete-dialog-button ff-main text-center margin-b-30p" href="#">
+                <span>&nbsp;I'm not feeling it anymore.</span>
+              </a>
+            </div>
+            <div class="col-1-2 flex-col jc-center">
+              <a id="delete-cancel-button" class="button-main like-button delete-dialog-button ff-main text-center margin-b-30p" href="#">
+                <span>&nbsp;Keep it!</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Bottom Sheet -->
     <div id="bottom-sheet" class="container pos-fixed-full bg-color-white light-round-border drop-shadow-up no-scroll minimized">
+      <!-- Delete Mode Info Box -->
+      <div id="delete-mode-info" class="pos-fixed-page-center text-center modal-padding ff-main light-round-border round-border drop-shadow bg-color-white invisible">
+        <span>Delete Mode Off</span>
+      </div>
       <div id="bottom-sheet-header" class="row light-bottom-border override-height-92">
         <div class="col-1-3 flex-col ai-center jc-between">
           <h4 id="bottom-sheet-header-text" class="ff-headers margin-l-20p">My Likes</h4>
         </div>
         <div class="col-1-3 flex-col ai-fstart jc-center">
-          <span id="bottom-sheet-expand-button" class="material-symbols-outlined fs-30 icon-button">expand_less</span>
+          <span id="bottom-sheet-expand-button" class="material-symbols-outlined fs-30 icon-button color-grey">expand_less</span>
         </div>
-        <div class="col-1-3 flex-col ai-center jc-fend">
-          <span id="bottom-sheet-close-button" class="material-symbols-outlined icon-button fs-30 margin-r-20p invisible">close</span>
+        <div id="bottom-sheet-buttons" class="col-1-3 flex-col ai-center jc-fend invisible">
+          <span id="bottom-sheet-delete-mode-button" class="material-symbols-outlined icon-button color-grey fs-30 margin-r-20p">delete_forever</span>
+          <span id="bottom-sheet-close-button" class="material-symbols-outlined icon-button color-grey fs-30 margin-r-20p">close</span>
         </div>
       </div>
       <div id="bottom-sheet-gallery" class="row flex-wrap-on">
@@ -75,10 +105,10 @@
           </div>
         </div>
         <div class="row jc-space-even padding-t-3 padding-b-1">
-          <a id="dislike-button" class="button-main-disabled dislike-button ff-main text-center" href="#">
+          <a id="dislike-button" class="button-main-disabled dislike-button ff-main text-center circular-button-mobile" href="#">
             <span class="no-mobile">&nbsp;I'm not feeling it</span>
           </a>
-          <a id="like-button" class="button-main-disabled like-button ff-main text-center" href="#">
+          <a id="like-button" class="button-main-disabled like-button ff-main text-center circular-button-mobile" href="#">
             <span class="no-mobile">&nbsp;I like it!</span>
           </a>
         </div>
