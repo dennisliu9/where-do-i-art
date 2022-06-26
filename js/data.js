@@ -36,10 +36,19 @@ var metadata = {
   }
 };
 
+function equalArrays(first, second) {
+  if (first.length !== second.length) return false;
+  for (var i = 0; i < first.length; i++) {
+    if (first[i] !== second[i]) return false;
+  }
+  return true;
+}
+
 if (localStorage.getItem(localStorageKey) !== null) {
   var referenceDataKeys = Object.keys(data);
   var tmpData = JSON.parse(localStorage.getItem(localStorageKey));
-  if (JSON.stringify(referenceDataKeys) === JSON.stringify(Object.keys(tmpData))) {
+  var tmpDataKeys = Object.keys(tmpData);
+  if (equalArrays(referenceDataKeys, tmpDataKeys)) {
     // Only load data from storage if the keys in storage match what the program now needs
     // TODO: This is a TERRIBLE solution as users will lose their Likes between versions!
     data = tmpData;

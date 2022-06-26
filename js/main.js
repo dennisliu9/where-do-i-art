@@ -114,7 +114,7 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     toggleDeleteMode(false);
   } else if (event.target.tagName === 'SPAN' && ['delete_forever'].includes(event.target.textContent)) {
     // turn on delete mode
-    clearInterval(deleteModeInfoBoxTimerId);
+    clearTimeout(deleteModeInfoBoxTimerId);
     toggleDeleteMode();
     // show box and set timer to hide it
     $deleteModeInfoBox.classList.remove('invisible');
@@ -543,6 +543,7 @@ function handleImageClick(event) {
         for (var i = 0; i < data.likedObjects.length; i++) {
           if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
             data.viewingInDetail = data.likedObjects[i];
+            break;
           }
         }
       }
@@ -558,8 +559,7 @@ function handleImageClick(event) {
       for (var d = 0; d < data.likedObjects.length; d++) {
         if (String(data.likedObjects[d].objectID) === String(event.target.getAttribute('objectId'))) {
           data.deleting = data.likedObjects[d];
-          // do something here to store the DOM object to be deleted?
-          // check where in code the liked images are appended to gallery
+          break;
         }
       }
 
