@@ -551,6 +551,8 @@ function handleImageClick(event) {
       // Point detail img to the selected image's url
       // Setting requestFullSize to false, images are VERY large
       addImageToImg(data.viewingInDetail, $detailModalImage, false);
+      // Populate art info label/placard with appropriate info
+      addArtPlacard(data.viewingInDetail);
       $detailModalContainer.classList.remove('hidden');
     } else if (deleteMode === true) {
       // Delete Mode on, show delete modal
@@ -831,7 +833,6 @@ function hideDeleteModeInfoBox() {
 }
 
 function addArtPlacard(artObj) {
-  // $parentEl should be #art-label
   var artistName = artObj.artistDisplayName;
   var artistNationality = (artObj.artistNationality === '') ? artObj.culture : artObj.artistNationality;
   var artistBeginDate = artObj.artistBeginDate;
