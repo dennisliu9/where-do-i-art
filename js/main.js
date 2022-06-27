@@ -9,7 +9,7 @@ var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 5;
+var cacheItemsNum = 10;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
@@ -44,7 +44,9 @@ var $deletingGalleryImage;
 var $deleteConfirmButton = document.querySelector('#delete-confirm-button');
 var $deleteModeInfoBox = document.querySelector('#delete-mode-info');
 
-// need some way to detect clicks on the group
+var $artPlacardToggleButton = document.querySelector('#art-placard-toggle-button');
+var $artPlacard = document.querySelector('#art-placard');
+
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
 
 //                                            //
@@ -136,6 +138,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
 });
 
 window.addEventListener('click', handleImageClick);
+
+$artPlacardToggleButton.addEventListener('click', toggleArtPlacard);
 
 $deleteConfirmButton.addEventListener('click', function (event) {
   // Move object from data.likedObjects to data.dislikedObjects
@@ -880,7 +884,7 @@ function addArtPlacard(artObj) {
   var $placardArtTitle = document.querySelector('#placard-art-title');
   var $placardArtYear = document.querySelector('#placard-art-year');
   var $placardArtMedium = document.querySelector('#placard-art-medium');
-  var $placardArtLabelLink = document.querySelector('#art-label-link');
+  var $placardArtLabelLink = document.querySelector('#placard-link');
 
   $placardArtistName.textContent = artistName;
   $placardArtistBG.textContent = '(' + artistNationality + artistYears + ')';
@@ -888,6 +892,12 @@ function addArtPlacard(artObj) {
   $placardArtYear.textContent = artYears;
   $placardArtMedium.textContent = artMedium;
   $placardArtLabelLink.setAttribute('href', artURL);
+}
+
+function toggleArtPlacard() {
+  $artPlacardToggleButton.classList.toggle('material-symbols-rounded');
+  $artPlacardToggleButton.classList.toggle('material-symbols-outlined');
+  $artPlacard.classList.toggle('hidden');
 }
 
 //           //

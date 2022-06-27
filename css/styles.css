@@ -95,6 +95,10 @@ h5 {
   font-size: 16px;
 }
 
+.fs-12 {
+  font-size: 12px;
+}
+
 .bg-color-accent {
   background-color: var(--color-accent);
 }
