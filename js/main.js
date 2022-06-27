@@ -9,7 +9,7 @@ var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
-var cacheItemsNum = 5;
+var cacheItemsNum = 10;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
@@ -44,7 +44,9 @@ var $deletingGalleryImage;
 var $deleteConfirmButton = document.querySelector('#delete-confirm-button');
 var $deleteModeInfoBox = document.querySelector('#delete-mode-info');
 
-// need some way to detect clicks on the group
+var $artPlacardToggleButton = document.querySelector('#art-placard-toggle-button');
+var $artPlacard = document.querySelector('#art-placard');
+
 var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
 
 //                                            //
@@ -136,6 +138,8 @@ $bottomSheetHeader.addEventListener('click', function (event) {
 });
 
 window.addEventListener('click', handleImageClick);
+
+$artPlacardToggleButton.addEventListener('click', toggleArtPlacard);
 
 $deleteConfirmButton.addEventListener('click', function (event) {
   // Move object from data.likedObjects to data.dislikedObjects
@@ -551,6 +555,8 @@ function handleImageClick(event) {
       // Point detail img to the selected image's url
       // Setting requestFullSize to false, images are VERY large
       addImageToImg(data.viewingInDetail, $detailModalImage, false);
+      // Populate art info label/placard with appropriate info
+      addArtPlacard(data.viewingInDetail);
       $detailModalContainer.classList.remove('hidden');
     } else if (deleteMode === true) {
       // Delete Mode on, show delete modal
@@ -569,8 +575,8 @@ function handleImageClick(event) {
       $deletingGalleryImage = event.target.closest('div');
     }
   // something other than an image (excl detail-image) was clicked
-  } else if (event.target.id === 'detail-overlay') {
-    // Outside of detail image was clicked, close the detail modal
+  } else if (data.viewingInDetail !== null && event.target.tagName === 'DIV') {
+    // If the detail modal is open and anything other than the image or one of the text elements was clicked, close the detail modal
     $detailModalContainer.classList.add('hidden');
     data.viewingInDetail = null;
   } else if (event.target.id === 'detail-image') {
@@ -828,6 +834,70 @@ function updateDeleteInfoBox() {
 function hideDeleteModeInfoBox() {
   // to be called by setTimeout
   $deleteModeInfoBox.classList.add('invisible');
+}
+
+function addArtPlacard(artObj) {
+  var artistName = artObj.artistDisplayName;
+  var artistNationality = (artObj.artistNationality === '') ? artObj.culture : artObj.artistNationality;
+  var artistBeginDate = artObj.artistBeginDate;
+  var artistEndDate = artObj.artistEndDate;
+  var artistYears;
+  var artTitle = artObj.title;
+  var artBeginDate = artObj.objectBeginDate;
+  var artEndDate = artObj.objectEndDate;
+  var artYears;
+  var artMedium = artObj.medium;
+  var artURL = artObj.objectURL;
+
+  // handle blank artist names
+  if (artistName === '') {
+    artistName = 'Unknown Artist';
+  }
+  // handle artist background exceptions
+  if (artistNationality === '') {
+    artistNationality = 'Unknown Culture';
+  }
+  if (artistBeginDate !== '' && artistEndDate !== '') {
+    artistYears = ' ' + artistBeginDate + ' - ' + artistEndDate;
+  } else if (artistBeginDate === '' && artistEndDate !== '') {
+    artistYears = ' ' + 'Unk. - ' + artistEndDate;
+  } else if (artistBeginDate !== '' && artistEndDate === '') {
+    artistYears = ' ' + artistBeginDate + ' - ';
+  } else if (artistBeginDate === '' && artistEndDate === '') {
+    artistYears = '';
+  }
+  // handle art year exceptions
+  if (artBeginDate !== '' && artEndDate !== '' && artBeginDate !== artEndDate) {
+    artYears = artBeginDate + ' - ' + artEndDate;
+  } else if (artBeginDate !== '' && artEndDate !== '' && artBeginDate === artEndDate) {
+    artYears = artBeginDate;
+  } else if (artBeginDate !== '' && artEndDate === '') {
+    artYears = artBeginDate;
+  } else if (artBeginDate === '' && artEndDate !== '') {
+    artYears = artEndDate;
+  } else if (artBeginDate === '' && artEndDate === '') {
+    artYears = '';
+  }
+
+  var $placardArtistName = document.querySelector('#placard-artist-name');
+  var $placardArtistBG = document.querySelector('#placard-artist-bg');
+  var $placardArtTitle = document.querySelector('#placard-art-title');
+  var $placardArtYear = document.querySelector('#placard-art-year');
+  var $placardArtMedium = document.querySelector('#placard-art-medium');
+  var $placardArtLabelLink = document.querySelector('#placard-link');
+
+  $placardArtistName.textContent = artistName;
+  $placardArtistBG.textContent = '(' + artistNationality + artistYears + ')';
+  $placardArtTitle.textContent = artTitle;
+  $placardArtYear.textContent = artYears;
+  $placardArtMedium.textContent = artMedium;
+  $placardArtLabelLink.setAttribute('href', artURL);
+}
+
+function toggleArtPlacard() {
+  $artPlacardToggleButton.classList.toggle('material-symbols-rounded');
+  $artPlacardToggleButton.classList.toggle('material-symbols-outlined');
+  $artPlacard.classList.toggle('hidden');
 }
 
 //           //

@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Raleway:wght@300;400;700&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/styles.css">
@@ -20,6 +21,14 @@
         'wght' 400,
         'GRAD' 0,
         'opsz' 48
+    }
+
+    .material-symbols-rounded {
+      font-variation-settings:
+      'FILL' 1,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 48
     }
   </style>
 </head>
@@ -34,8 +43,22 @@
   <main>
     <!-- Detail Modal -->
     <div id="detail-container" class="z-level-6 modal-container hidden">
-      <div id="detail-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-col ai-center jc-center modal-padding">
-        <img id="detail-image" class="fully-contained" src="images/imageplaceholder.PNG" alt="Placeholder image">
+      <div id="detail-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-wrap-on">
+        <div class="container flex-col flex-wrap-on pos-fixed-full modal-padding ">
+          <div class="col-full aself-center text-center">
+            <img id="detail-image" class="fully-contained" src="images/imageplaceholder.PNG" alt="Placeholder image">
+            <div class="col-full text-left pos-abs">
+              <span id="art-placard-toggle-button" class="material-symbols-outlined icon-button color-white fs-30 margin-r-20p float-right">info</span>
+              <span id="art-placard" class="ff-main color-white hidden">
+                <span id="placard-artist-name" class="fs-16">Vincent van Gogh</span><br>
+                <span id="placard-artist-bg" class="fs-12">(Dutch 1853 - 1890)</span><br>
+                <i id="placard-art-title" class="fs-16">Wheat Field with Cypresses</i>, <span id="placard-art-year" class="fs-16">1889</span><br>
+                <span id="placard-art-medium" class="fs-12">Oil on canvas</span><br>
+                <a id="placard-link" class="no-text-deco color-white fs-12" href="https://www.google.com" target="_blank">Full Artwork Details <span class="material-symbols-outlined fs-16 va-bottom">open_in_new</span></a>
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <!-- Delete Confirmation Modal -->
