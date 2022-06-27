@@ -51,8 +51,16 @@
   align-items: flex-start;
 }
 
+.aself-center {
+  align-self: center;
+}
+
 .flex-wrap-on {
   flex-wrap: wrap;
+}
+
+.pos-abs {
+  position: absolute;
 }
 
 .pos-abs-full {
@@ -95,6 +103,10 @@
 
 .text-center {
   text-align: center;
+}
+
+.text-left {
+  text-align: left;
 }
 
 @media only screen and (min-width: 851px) {
