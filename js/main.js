@@ -569,8 +569,8 @@ function handleImageClick(event) {
       $deletingGalleryImage = event.target.closest('div');
     }
   // something other than an image (excl detail-image) was clicked
-  } else if (event.target.id === 'detail-overlay') {
-    // Outside of detail image was clicked, close the detail modal
+  } else if (data.viewingInDetail !== null && event.target.tagName === 'DIV') {
+    // If the detail modal is open and anything other than the image or one of the text elements was clicked, close the detail modal
     $detailModalContainer.classList.add('hidden');
     data.viewingInDetail = null;
   } else if (event.target.id === 'detail-image') {
