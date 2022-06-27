@@ -830,6 +830,65 @@ function hideDeleteModeInfoBox() {
   $deleteModeInfoBox.classList.add('invisible');
 }
 
+function addArtPlacard(artObj) {
+  // $parentEl should be #art-label
+  var artistName = artObj.artistDisplayName;
+  var artistNationality = (artObj.artistNationality === '') ? artObj.culture : artObj.artistNationality;
+  var artistBeginDate = artObj.artistBeginDate;
+  var artistEndDate = artObj.artistEndDate;
+  var artistYears;
+  var artTitle = artObj.title;
+  var artBeginDate = artObj.objectBeginDate;
+  var artEndDate = artObj.objectEndDate;
+  var artYears;
+  var artMedium = artObj.medium;
+  var artURL = artObj.objectURL;
+
+  // handle blank artist names
+  if (artistName === '') {
+    artistName = 'Unknown Artist';
+  }
+  // handle artist background exceptions
+  if (artistNationality === '') {
+    artistNationality = 'Unknown Culture';
+  }
+  if (artistBeginDate !== '' && artistEndDate !== '') {
+    artistYears = ' ' + artistBeginDate + ' - ' + artistEndDate;
+  } else if (artistBeginDate === '' && artistEndDate !== '') {
+    artistYears = ' ' + 'Unk. - ' + artistEndDate;
+  } else if (artistBeginDate !== '' && artistEndDate === '') {
+    artistYears = ' ' + artistBeginDate + ' - ';
+  } else if (artistBeginDate === '' && artistEndDate === '') {
+    artistYears = '';
+  }
+  // handle art year exceptions
+  if (artBeginDate !== '' && artEndDate !== '' && artBeginDate !== artEndDate) {
+    artYears = artBeginDate + ' - ' + artEndDate;
+  } else if (artBeginDate !== '' && artEndDate !== '' && artBeginDate === artEndDate) {
+    artYears = artBeginDate;
+  } else if (artBeginDate !== '' && artEndDate === '') {
+    artYears = artBeginDate;
+  } else if (artBeginDate === '' && artEndDate !== '') {
+    artYears = artEndDate;
+  } else if (artBeginDate === '' && artEndDate === '') {
+    artYears = '';
+  }
+
+  var $placardArtistName = document.querySelector('#placard-artist-name');
+  var $placardArtistBG = document.querySelector('#placard-artist-bg');
+  var $placardArtTitle = document.querySelector('#placard-art-title');
+  var $placardArtYear = document.querySelector('#placard-art-year');
+  var $placardArtMedium = document.querySelector('#placard-art-medium');
+  var $placardArtLabelLink = document.querySelector('#art-label-link');
+
+  $placardArtistName.textContent = artistName;
+  $placardArtistBG.textContent = '(' + artistNationality + artistYears + ')';
+  $placardArtTitle.textContent = artTitle;
+  $placardArtYear.textContent = artYears;
+  $placardArtMedium.textContent = artMedium;
+  $placardArtLabelLink.setAttribute('href', artURL);
+}
+
 //           //
 // Execution //
 //           //
