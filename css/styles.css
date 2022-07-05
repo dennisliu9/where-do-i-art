@@ -547,6 +547,25 @@ img:hover {
     --bottom-header-height: 68px;
   }
 
+  body,
+  html {
+    height: 100%;
+  }
+
+  .height-full-no-header-no-bottom {
+    /* height: calc(100vh - var(--header-height) - var(--bottom-header-height)); */
+    height: calc(100% - var(--header-height) - var(--bottom-header-height));
+  }
+
+  #bottom-sheet {
+    /* top: calc(100vh - (100vh - var(--header-height))); up to header height */
+    top: calc(100% - (100% - var(--header-height)));
+
+    /* up to header height */
+    z-index: 1;
+    transition: transform 300ms ease 0ms;
+  }
+
   .no-mobile {
     display: none;
   }
