@@ -63,6 +63,10 @@
   position: absolute;
 }
 
+.pos-rel {
+  position: relative;
+}
+
 .pos-abs-full {
   position: absolute;
   top: 0;

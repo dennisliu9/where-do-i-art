@@ -42,19 +42,6 @@
     </div>
   </header>
   <main>
-    <div class="container">
-      <div class="row jc-center">
-        <div class="column-full text-center">
-          <div style="border: 1px solid red" class="lds-ellipsis">
-            <div></div>
-            <div class=""></div>
-            <div class=""></div>
-            <div class=""></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Detail Modal -->
     <div id="detail-container" class="z-level-6 modal-container hidden">
       <div id="detail-overlay" class="modal-overlay bg-color-modal-overlay pos-fixed-full flex-wrap-on">
@@ -64,11 +51,11 @@
             <div class="col-full text-left pos-abs">
               <span id="art-placard-toggle-button" class="material-symbols-outlined icon-button color-white fs-30 margin-r-20p float-right">info</span>
               <span id="art-placard" class="ff-main color-white hidden">
-                <span id="placard-artist-name" class="fs-16">Vincent van Gogh</span><br>
-                <span id="placard-artist-bg" class="fs-12">(Dutch 1853 - 1890)</span><br>
-                <i id="placard-art-title" class="fs-16">Wheat Field with Cypresses</i>, <span id="placard-art-year" class="fs-16">1889</span><br>
-                <span id="placard-art-medium" class="fs-12">Oil on canvas</span><br>
-                <a id="placard-link" class="no-text-deco color-white fs-12" href="https://www.google.com" target="_blank">Full Artwork Details <span class="material-symbols-outlined fs-16 va-bottom">open_in_new</span></a>
+                <span id="placard-artist-name" class="fs-16">Artist Name</span><br>
+                <span id="placard-artist-bg" class="fs-12">(Artist Nationality Year - Year)</span><br>
+                <i id="placard-art-title" class="fs-16">Artwork Title</i>, <span id="placard-art-year" class="fs-16">Artwork Year</span><br>
+                <span id="placard-art-medium" class="fs-12">Artwork Medium</span><br>
+                <a id="placard-link" class="no-text-deco color-white fs-12" href="#" target="_blank">Full Artwork Details <span class="material-symbols-outlined fs-16 va-bottom">open_in_new</span></a>
               </span>
             </div>
           </div>
@@ -126,7 +113,6 @@
     <div id="main-app-area" class="height-full-no-header-no-bottom inner-scroll ">
       <div class="container" data-view="landing">
         <div class="row flex-wrap-on text-center">
-          <!-- Div below used to have margin-top 5rem on desktop, margin-top 3rem on mobile-->
           <div class="col-full padding-t-3-mobile">
             <h1 class="ff-headers">Let's start finding something cool</h1>
           </div>
@@ -136,7 +122,23 @@
         </div>
       </div>
       <div class="container padding-t-3 padding-b-3 hidden" data-view="selection">
-        <div class="row jc-center">
+        <div class="row jc-center pos-rel">
+          <!-- Overlay for Progress Loader -->
+          <div id="image-loader-container" class="pos-abs-full flex-col round-border bg-color-dark-grey-transparent blur-below hidden">
+            <div class="progress-spinner container aself-center">
+              <div class="row jc-center">
+                <div class="column-full text-center">
+                  <h4 class="ff-main color-white">Sit tight, the next image is on its way!</h4>
+                  <div class="lds-ellipsis">
+                    <div></div>
+                    <div class=""></div>
+                    <div class=""></div>
+                    <div class=""></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="img-main text-center">
             <img id="display-image" src="images/imageplaceholder.PNG" alt="Image Loading">
           </div>

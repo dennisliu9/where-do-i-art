@@ -21,6 +21,7 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-grey-05alpha: rgba(175, 175, 175, 0.5);
   --color-dark-grey: #484847;
   --color-dark-grey-03alpha: rgba(48, 48, 47, 0.3);
+  --color-dark-grey-05alpha: rgba(48, 48, 47, 0.5);
   --color-white: #fff;
   --color-black: #000;
   --header-height: 64px;
@@ -110,6 +111,11 @@ h5 {
 .bg-color-modal-overlay {
   background-color: rgb(0, 0, 0);
   background-color: rgba(0, 0, 0, 0.8);
+}
+
+.bg-color-dark-grey-transparent {
+  background-color: var(--color-dark-grey);
+  background-color: var(--color-dark-grey-05alpha);
 }
 
 .color-white {
@@ -311,6 +317,10 @@ h5 {
 
 .minimized {
   transform: translateY(calc((100vh - (var(--header-height) + 91px))));
+}
+
+.blur-below {
+  backdrop-filter: blur(10px);
 }
 
 /* Specific Element CSS rules */
