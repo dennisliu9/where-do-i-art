@@ -165,6 +165,10 @@ $deleteConfirmButton.addEventListener('click', function (event) {
 
 $searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
+// Check if offline
+// This error happens on local due to LiveReload Server issue
+window.addEventListener('offline', window.alert('It looks like you\'re offline! Please check your connection and try again.'));
+
 //           //
 // functions //
 //           //
