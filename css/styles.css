@@ -638,5 +638,6 @@ img:hover {
 
   .minimized {
     transform: translateY(calc((100% - (var(--header-height) + 67px))));
+    transform: translateY(calc((100dvh - (var(--header-height) + 67px))));
   }
 }
