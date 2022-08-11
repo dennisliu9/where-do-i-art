@@ -21,6 +21,7 @@ small headline on metadata (h5): 18px (RalewayBold)
   --color-grey-05alpha: rgba(175, 175, 175, 0.5);
   --color-dark-grey: #484847;
   --color-dark-grey-03alpha: rgba(48, 48, 47, 0.3);
+  --color-dark-grey-05alpha: rgba(48, 48, 47, 0.5);
   --color-white: #fff;
   --color-black: #000;
   --header-height: 64px;
@@ -110,6 +111,11 @@ h5 {
 .bg-color-modal-overlay {
   background-color: rgb(0, 0, 0);
   background-color: rgba(0, 0, 0, 0.8);
+}
+
+.bg-color-dark-grey-transparent {
+  background-color: var(--color-dark-grey);
+  background-color: var(--color-dark-grey-05alpha);
 }
 
 .color-white {
@@ -311,6 +317,10 @@ h5 {
 
 .minimized {
   transform: translateY(calc((100vh - (var(--header-height) + 91px))));
+}
+
+.blur-below {
+  backdrop-filter: blur(10px);
 }
 
 /* Specific Element CSS rules */
@@ -517,7 +527,7 @@ img:hover {
 
   .dislike-button,
   .like-button {
-    width: 30vw;
+    width: 20vw;
     min-width: 210px;
   }
 
@@ -537,22 +547,40 @@ img:hover {
     --bottom-header-height: 68px;
   }
 
+  body,
+  html {
+    height: 100%;
+  }
+
+  .height-full-no-header-no-bottom {
+    height: calc(100% - var(--header-height) - var(--bottom-header-height));
+  }
+
+  #bottom-sheet {
+    top: calc(100% - (100% - var(--header-height)));
+
+    /* up to header height */
+    z-index: 1;
+    transition: transform 300ms ease 0ms;
+  }
+
   .no-mobile {
     display: none;
   }
 
   h1 {
+    font-size: 40px;
     padding-left: 10px;
     padding-right: 10px;
     margin: 0;
   }
 
   .margin-t-5 {
-    margin-top: 4rem;
+    margin-top: 2rem;
   }
 
-  .padding-t-3-mobile {
-    padding-top: 3rem;
+  .padding-t-3 {
+    padding-top: 2rem;
   }
 
   .padding-t-1-mobile {
@@ -588,9 +616,9 @@ img:hover {
   }
 
   .circular-button-mobile {
-    width: 120px;
-    height: 120px;
-    min-width: 120px;
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
     border-radius: 50%;
     padding: 1rem;
   }
@@ -608,6 +636,6 @@ img:hover {
   }
 
   .minimized {
-    transform: translateY(calc((100% - (var(--header-height) + 67px))));
+    transform: translateY(calc(100% - var(--header-height)));
   }
 }

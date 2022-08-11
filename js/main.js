@@ -17,6 +17,14 @@ var similarNumOfProperties = 1; // for simplicity, sticking with 1 value from 1 
 var similarNumOfValues = 1;
 var deleteMode = false;
 var deleteModeInfoBoxTimerId;
+var spinnerColorSchemes = [
+  ['#53bf9d', '#f94c66', '#bd4291', '#ffc54d'],
+  ['#480032', '#005792', '#FC92E3', '#F2F4C3'],
+  ['#99B898', '#FECEAB', '#FF847C', '#E84A5F'],
+  ['#F39DE5', '#9B77DA', '#4E6B9F', '#6FA5B1'],
+  ['#41D3BD', '#FFFFF2', '#791E94', '#DE6449'],
+  ['#151515', '#E7441C', '#0363A6', '#F9A102']
+];
 
 // DOM objects
 var $topLogo = document.querySelector('#top-logo');
@@ -26,6 +34,7 @@ var $showSomething = document.querySelector('#show-something');
 var $displayImage = document.querySelector('#display-image');
 var $dislikeButton = document.querySelector('#dislike-button');
 var $likeButton = document.querySelector('#like-button');
+var $imageLoader = document.querySelector('#image-loader-container');
 
 var $bottomSheet = document.querySelector('#bottom-sheet');
 var $bottomSheetHeader = document.querySelector('#bottom-sheet-header');
@@ -156,6 +165,24 @@ $deleteConfirmButton.addEventListener('click', function (event) {
 
 $searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
+// Check if offline
+window.addEventListener('offline', () => {
+  window.alert('It looks like you\'re offline! Please check your connection and try again.');
+});
+
+// If image URL leads to 404, dislike and move to the next
+$displayImage.addEventListener('error', () => {
+  // Replicate logic from pressing Dislike button
+  // categorize displayed one as dislike
+  data.dislikedObjects.push(displayArtObj);
+  // retrieve the next from cache list
+  nextArtObj = artObjCache.shift();
+  // fetch another artwork to replace the missing one
+  getArtwork(false, searchType);
+  // show the next object while the next artwork is being fetched
+  setImage(nextArtObj);
+});
+
 //           //
 // functions //
 //           //
@@ -223,6 +250,13 @@ function shuffleArray(array) {
 //                                //
 
 function startup() {
+  // Set random color scheme for spinner
+  var spinnerScheme = spinnerColorSchemes[Math.floor(Math.random() * spinnerColorSchemes.length)];
+  var $root = document.documentElement;
+  $root.style.setProperty('--spinner-color-1', spinnerScheme[0]);
+  $root.style.setProperty('--spinner-color-2', spinnerScheme[1]);
+  $root.style.setProperty('--spinner-color-3', spinnerScheme[2]);
+  $root.style.setProperty('--spinner-color-4', spinnerScheme[3]);
 
   // Render Liked images into gallery
   renderAllLiked();
@@ -259,11 +293,13 @@ function startup() {
       $dislikeButton.classList.add('button-main');
       $likeButton.classList.remove('button-main-disabled');
       $dislikeButton.classList.remove('button-main-disabled');
+      $imageLoader.classList.add('hidden');
     } else if (artObjCache.length === 0) {
       $likeButton.classList.add('button-main-disabled');
       $dislikeButton.classList.add('button-main-disabled');
       $likeButton.classList.remove('button-main');
       $dislikeButton.classList.remove('button-main');
+      $imageLoader.classList.remove('hidden');
     }
   }
   setInterval(enableLikeButtons, 100);

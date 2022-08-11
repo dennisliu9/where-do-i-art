@@ -1,0 +1,137 @@
+:root {
+  --spinner-color-1: #53bf9d;
+  --spinner-color-2: #f94c66;
+  --spinner-color-3: #bd4291;
+  --spinner-color-4: #ffc54d;
+}
+
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.lds-ellipsis div {
+  position: absolute;
+  top: 33px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #000;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+  left: 8px;
+  animation: lds-ellipsis-a 2s infinite;
+  background: var(--spinner-color-1);
+}
+
+.lds-ellipsis div:nth-child(2) {
+  left: 8px;
+  animation: lds-ellipsis-b 2s infinite;
+  background: var(--spinner-color-2);
+}
+
+.lds-ellipsis div:nth-child(3) {
+  left: 32px;
+  animation: lds-ellipsis-c 2s infinite;
+  background: var(--spinner-color-3);
+}
+
+.lds-ellipsis div:nth-child(4) {
+  left: 56px;
+  animation: lds-ellipsis-d 2s infinite;
+  background: var(--spinner-color-4);
+}
+
+/* custom spinner */
+
+@keyframes lds-ellipsis-a {
+  0% {
+    transform: scale(0) translate(0, 0);
+  }
+
+  25% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1) translate(24px, 0);
+  }
+
+  75% {
+    transform: scale(1) translate(48px, 0);
+  }
+
+  100% {
+    transform: scale(0) translate(0, 0);
+  }
+}
+
+@keyframes lds-ellipsis-b {
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  25% {
+    transform: scale(1) translate(24px, 0);
+  }
+
+  50% {
+    transform: scale(1) translate(48px, 0);
+  }
+
+  75% {
+    transform: scale(0) translate(0, 0);
+  }
+}
+
+@keyframes lds-ellipsis-c {
+  75% {
+    transform: scale(1) translate(-24px, 0);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  25% {
+    transform: scale(1) translate(24px, 0);
+  }
+
+  50% {
+    transform: scale(0) translate(-24px, 0);
+  }
+}
+
+@keyframes lds-ellipsis-d {
+  50% {
+    transform: scale(1) translate(-48px, 0);
+  }
+
+  75% {
+    transform: scale(1) translate(-24px, 0);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  25% {
+    transform: scale(0) translate(-48px, 0);
+  }
+}
