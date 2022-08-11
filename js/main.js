@@ -170,6 +170,19 @@ window.addEventListener('offline', () => {
   window.alert('It looks like you\'re offline! Please check your connection and try again.');
 });
 
+// If image URL leads to 404, dislike and move to the next
+$displayImage.addEventListener('error', () => {
+  // Replicate logic from pressing Dislike button
+  // categorize displayed one as dislike
+  data.dislikedObjects.push(displayArtObj);
+  // retrieve the next from cache list
+  nextArtObj = artObjCache.shift();
+  // fetch another artwork to replace the missing one
+  getArtwork(false, searchType);
+  // show the next object while the next artwork is being fetched
+  setImage(nextArtObj);
+});
+
 //           //
 // functions //
 //           //
