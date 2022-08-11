@@ -527,7 +527,7 @@ img:hover {
 
   .dislike-button,
   .like-button {
-    width: 30vw;
+    width: 20vw;
     min-width: 210px;
   }
 
@@ -553,12 +553,10 @@ img:hover {
   }
 
   .height-full-no-header-no-bottom {
-    /* height: calc(100vh - var(--header-height) - var(--bottom-header-height)); */
     height: calc(100% - var(--header-height) - var(--bottom-header-height));
   }
 
   #bottom-sheet {
-    /* top: calc(100vh - (100vh - var(--header-height))); up to header height */
     top: calc(100% - (100% - var(--header-height)));
 
     /* up to header height */
@@ -571,17 +569,18 @@ img:hover {
   }
 
   h1 {
+    font-size: 40px;
     padding-left: 10px;
     padding-right: 10px;
     margin: 0;
   }
 
   .margin-t-5 {
-    margin-top: 4rem;
+    margin-top: 2rem;
   }
 
-  .padding-t-3-mobile {
-    padding-top: 3rem;
+  .padding-t-3 {
+    padding-top: 2rem;
   }
 
   .padding-t-1-mobile {
@@ -617,9 +616,9 @@ img:hover {
   }
 
   .circular-button-mobile {
-    width: 120px;
-    height: 120px;
-    min-width: 120px;
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
     border-radius: 50%;
     padding: 1rem;
   }
@@ -637,7 +636,6 @@ img:hover {
   }
 
   .minimized {
-    transform: translateY(calc((100% - (var(--header-height) + 67px))));
-    transform: translateY(calc((100dvh - (var(--header-height) + 67px))));
+    transform: translateY(calc(100% - var(--header-height)));
   }
 }
