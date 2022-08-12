@@ -10,11 +10,13 @@ var metSearchResults = {};
 var metArtObj = {};
 var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
 var cacheItemsNum = 10;
+var maxRetries = 20;
 var displayArtObj = {};
 var nextArtObj = {};
 var searchType = 'random';
 var similarNumOfProperties = 1; // for simplicity, sticking with 1 value from 1 department from now
 var similarNumOfValues = 1;
+var loaderTimerId;
 var deleteMode = false;
 var deleteModeInfoBoxTimerId;
 var spinnerColorSchemes = [
@@ -183,6 +185,16 @@ $displayImage.addEventListener('error', () => {
   setImage(nextArtObj);
 });
 
+$displayImage.addEventListener('load', () => {
+  if ($displayImage.getAttribute('src') === 'images/imageplaceholder.PNG') {
+    return;
+  }
+  // when image is loaded, enable the buttons and hide the loader
+  // Stop the loader timeout if the image has already loaded
+  clearTimeout(loaderTimerId);
+  enableLikeButtons(true);
+});
+
 //           //
 // functions //
 //           //
@@ -258,6 +270,9 @@ function startup() {
   $root.style.setProperty('--spinner-color-3', spinnerScheme[2]);
   $root.style.setProperty('--spinner-color-4', spinnerScheme[3]);
 
+  // Loader is visible by default, needs to be hidden when image loads successfully
+  enableLikeButtons(false);
+
   // Render Liked images into gallery
   renderAllLiked();
 
@@ -285,25 +300,25 @@ function startup() {
     getArtwork(true, searchType);
   });
   getMetDeptsRequest.send();
-
-  // Enable Like/Dislike buttons if artObjCache has at least one record
-  function enableLikeButtons() {
-    if (artObjCache.length !== 0) {
-      $likeButton.classList.add('button-main');
-      $dislikeButton.classList.add('button-main');
-      $likeButton.classList.remove('button-main-disabled');
-      $dislikeButton.classList.remove('button-main-disabled');
-      $imageLoader.classList.add('hidden');
-    } else if (artObjCache.length === 0) {
-      $likeButton.classList.add('button-main-disabled');
-      $dislikeButton.classList.add('button-main-disabled');
-      $likeButton.classList.remove('button-main');
-      $dislikeButton.classList.remove('button-main');
-      $imageLoader.classList.remove('hidden');
-    }
-  }
-  setInterval(enableLikeButtons, 100);
 }
+
+// Enable Like/Dislike buttons if artObjCache has at least one record
+function enableLikeButtons(enable) {
+  if (enable) {
+    $likeButton.classList.add('button-main');
+    $dislikeButton.classList.add('button-main');
+    $likeButton.classList.remove('button-main-disabled');
+    $dislikeButton.classList.remove('button-main-disabled');
+    $imageLoader.classList.add('hidden');
+  } else if (!enable) {
+    $likeButton.classList.add('button-main-disabled');
+    $dislikeButton.classList.add('button-main-disabled');
+    $likeButton.classList.remove('button-main');
+    $dislikeButton.classList.remove('button-main');
+    $imageLoader.classList.remove('hidden');
+  }
+}
+// setInterval(enableLikeButtons, 100);
 
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
@@ -391,6 +406,10 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
     } else {
       // put new objects at the front so switching to different selectType starts taking place sooner
       artObjCache.unshift(metArtObj);
+
+      // If we have more than 2 items in the cache, allow operations again
+      // If we have 2 or less items in the cache, stop the user from advancing
+      (artObjCache.length > 2) ? enableLikeButtons(true) : enableLikeButtons(false);
     }
   } else {
     searchResultsIdx++;
@@ -447,8 +466,11 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
   }
 
   // if we exhausted the list of id's, pull again
-  if (searchResultsIdx >= metSearchResults.objectIDs.length) {
-    getArtwork(false, searchType);
+  // if we have a department with multiple back-to-back responses with no images,
+  // then try doing a new search entirely (only on isStart, to allow caching of
+  // these types of departments)
+  if (searchResultsIdx >= metSearchResults.objectIDs.length || (isStart && searchResultsIdx >= maxRetries)) {
+    getArtwork(isStart, searchType);
     // exit out of the function call because this metSearchResults is no longer useful
     return;
   }
@@ -527,6 +549,9 @@ function addImageToImg(artObj, $img, requestFullSize) {
 }
 
 function setImage(artObj) {
+  // disable the buttons and show the loader as the image gets updated
+  // Set timer so loader only appears on cases where image loads slowly
+  loaderTimerId = setTimeout(() => enableLikeButtons(false), 200);
   // displayArtObj holds the data for the image being decided on
   displayArtObj = artObj;
   addImageToImg(artObj, $displayImage);

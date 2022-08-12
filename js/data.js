@@ -53,6 +53,9 @@ if (localStorage.getItem(localStorageKey) !== null) {
     // TODO: This is a TERRIBLE solution as users will lose their Likes between versions!
     data = tmpData;
   }
+
+  // If there are null values that somehow make it into the liked data, remove it
+  data.likedObjects = data.likedObjects.filter(element => element !== null);
 }
 
 window.addEventListener('beforeunload', function (event) {
