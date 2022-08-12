@@ -305,8 +305,6 @@ h5 {
 .img-gallery-container {
   height: 280px;
   padding: 12px 50px;
-
-  /* width from the col-1-3 class */
 }
 
 .img-gallery-container img {

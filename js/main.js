@@ -318,7 +318,6 @@ function enableLikeButtons(enable) {
     $imageLoader.classList.remove('hidden');
   }
 }
-// setInterval(enableLikeButtons, 100);
 
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
