@@ -414,6 +414,7 @@ function getArtwork(isStart, searchType) {
   if (artObjCache.length >= cacheItemsNum) {
     return;
   }
+  (artObjCache.length > 2) ? enableLikeButtons(true) : enableLikeButtons(false);
 
   var searchRequest;
   var deptId;
