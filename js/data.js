@@ -65,6 +65,13 @@ window.addEventListener('beforeunload', function (event) {
   this.localStorage.setItem(localStorageKey, JSON.stringify(data));
 });
 
+window.addEventListener('pagehide', function (event) {
+  if (devLocalStorageOverrideFlag) {
+    return;
+  }
+  this.localStorage.setItem(localStorageKey, JSON.stringify(data));
+});
+
 // eslint-disable-next-line no-unused-vars
 function devOverrideLocalStorage() {
   // Clears out data and prevents data from being persisted in localStorage
