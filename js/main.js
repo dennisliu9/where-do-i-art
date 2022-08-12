@@ -8,7 +8,7 @@ var metEndpoint = 'https://collectionapi.metmuseum.org/public/collection/v1/';
 var metDepts = [];
 var metSearchResults = {};
 var metArtObj = {};
-var artObjCache = []; // holds cacheItemsNum amount of pre-fetched metArtObj's
+var artObjCache = [];
 var cacheItemsNum = 10;
 var maxRetries = 20;
 var displayArtObj = {};
@@ -64,21 +64,15 @@ var $searchTypeChipsContainer = document.querySelector('#search-type-chips');
 // event listeners (that aren't in functions) //
 //                                            //
 
-// Logo text switches to landing view
 $topLogo.addEventListener('click', function (event) {
   swapView(event.target.dataset.viewLink);
 });
 
-// Show Something button switches to selection view
 $showSomething.addEventListener('click', function (event) {
   if ($showSomething.classList.contains('button-main-disabled')) {
     return;
   }
-  // (future optimization point)
-  // When clicked, grab one and set it immediately
   swapView(event.target.dataset.viewLink);
-  // Then start building cache of images for both caches
-  // Start with selected option
   for (var i = 1; i <= cacheItemsNum; i++) {
     getArtwork(false, searchType);
   }
@@ -89,13 +83,9 @@ $dislikeButton.addEventListener('click', function (event) {
   if ($dislikeButton.classList.contains('button-main-disabled')) {
     return;
   }
-  // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
-  // retrieve the next from cache list
   nextArtObj = artObjCache.shift();
-  // fetch another artwork to replace the missing one
   getArtwork(false, searchType);
-  // show the next object while the next artwork is being fetched
   setImage(nextArtObj);
 });
 
@@ -113,7 +103,7 @@ $likeButton.addEventListener('click', function (event) {
 });
 
 $bottomSheetHeader.addEventListener('click', function (event) {
-  if (event.target.tagName === 'SPAN' && ['close', 'expand_more'].includes(event.target.textContent)) {
+  if (['close', 'expand_more'].includes(event.target.textContent.trim()) && event.target.tagName !== 'DIV') {
     // close bottom sheet
     $bottomSheet.classList.add('light-round-border');
     $bottomSheet.classList.add('drop-shadow-up');
@@ -125,15 +115,14 @@ $bottomSheetHeader.addEventListener('click', function (event) {
     $mainAppArea.classList.remove('no-scroll');
     $mainAppArea.classList.add('inner-scroll');
     toggleDeleteMode(false);
-  } else if (event.target.tagName === 'SPAN' && ['delete_forever'].includes(event.target.textContent)) {
+  } else if (['delete_forever'].includes(event.target.textContent.trim())) {
     // turn on delete mode
     clearTimeout(deleteModeInfoBoxTimerId);
     toggleDeleteMode();
-    // show box and set timer to hide it
+    // show info box and set timer to hide it
     $deleteModeInfoBox.classList.remove('invisible');
     $deleteModeInfoBox.textContent = updateDeleteInfoBox();
     deleteModeInfoBoxTimerId = setTimeout(hideDeleteModeInfoBox, 1000);
-
   } else {
     // open bottom sheet
     $bottomSheet.classList.remove('light-round-border');
@@ -160,28 +149,20 @@ $deleteConfirmButton.addEventListener('click', function (event) {
   $deletingGalleryImage.remove();
   data.deleting = null;
   $deletingGalleryImage = null;
-
-  // Hide the delete modal when done
   $deleteModalContainer.classList.add('hidden');
 });
 
 $searchTypeChipsContainer.addEventListener('click', handleSelectionChipClick);
 
-// Check if offline
 window.addEventListener('offline', () => {
   window.alert('It looks like you\'re offline! Please check your connection and try again.');
 });
 
 // If image URL leads to 404, dislike and move to the next
 $displayImage.addEventListener('error', () => {
-  // Replicate logic from pressing Dislike button
-  // categorize displayed one as dislike
   data.dislikedObjects.push(displayArtObj);
-  // retrieve the next from cache list
   nextArtObj = artObjCache.shift();
-  // fetch another artwork to replace the missing one
   getArtwork(false, searchType);
-  // show the next object while the next artwork is being fetched
   setImage(nextArtObj);
 });
 
@@ -189,8 +170,6 @@ $displayImage.addEventListener('load', () => {
   if ($displayImage.getAttribute('src') === 'images/imageplaceholder.PNG') {
     return;
   }
-  // when image is loaded, enable the buttons and hide the loader
-  // Stop the loader timeout if the image has already loaded
   clearTimeout(loaderTimerId);
   enableLikeButtons(true);
 });
@@ -198,68 +177,6 @@ $displayImage.addEventListener('load', () => {
 //           //
 // functions //
 //           //
-
-// Swap view
-function swapView(dataView) {
-  var $views = document.querySelectorAll('[data-view]');
-  for (var vwIdx = 0; vwIdx < $views.length; vwIdx++) {
-    if ($views[vwIdx].dataset.view === dataView) {
-      $views[vwIdx].classList.remove('hidden');
-    } else {
-      $views[vwIdx].classList.add('hidden');
-    }
-  }
-}
-
-// Fisher–Yates shuffle, guide from https://bost.ocks.org/mike/shuffle/
-function shuffleArray(array) {
-  /*
-  Shuffles an array by creating a "front side of the deck" and a "back side of the deck."
-  Array begins with all items in the front and 0 in the back.
-  Item is picked randomly from the front of the deck (i).
-  This item is then swapped with the first item in the "back side"
-    Putting the first element into the "back side", our shuffled array begins
-  Now our "front side" is smaller by one element, and we pick another random item from this smaller "front"
-  Repeat the swapping process until we have removed everything from the front side and they are all in the back side
-    The back side is assembled by randomly picking, so we have a shuffled array!
-  (Number of values in the array could potentially be large, so I had to
-    outsource the sorting algorithm)
-
-  Create a copy of the array to work on
-  Create a variable to store the index of the end of the front size of the array
-    Assign it the length of the array to start out (It will be incremented down on first iteration, so it should be .length)
-  Create placeholder variable for the array item index that will be drawn
-  Create placeholder variable for the array item at the end of the front side that will be replaced
-  While iterating our place downwards from the end of the array to index 0
-    Get an index that can be anywhere from index 0 to the end of the front
-    Store the item at the last index of the front side of the array in a variable
-    Set the item at the last index of the front side of the array to the value at the picked index
-    Set the value at the picked index to the item that was at the end of the front side
-  return the array
-  */
-
-  var arrayCopy = array.slice();
-  var m = arrayCopy.length;
-  var i;
-  var t;
-
-  while (m > 0) {
-    // Pick from the front side of the array
-    i = Math.floor(Math.random() * m--);
-    // Item at the end of the front side will be replaced, so save it
-    t = arrayCopy[m];
-    // Put our picked item at the end of the front side
-    arrayCopy[m] = arrayCopy[i];
-    // We need to put the item from the end back in, put it where we got our picked item
-    arrayCopy[i] = t;
-  }
-
-  return arrayCopy;
-}
-
-//                                //
-// Metropolitan Museum of Art API //
-//                                //
 
 function startup() {
   // Set random color scheme for spinner
@@ -270,25 +187,18 @@ function startup() {
   $root.style.setProperty('--spinner-color-3', spinnerScheme[2]);
   $root.style.setProperty('--spinner-color-4', spinnerScheme[3]);
 
-  // Loader is visible by default, needs to be hidden when image loads successfully
   enableLikeButtons(false);
 
-  // Render Liked images into gallery
   renderAllLiked();
-
-  // Add metadata for all Liked images
   addAllToMetadata(data.likedObjects, 'likedMetadata');
 
   // Get departments, assuming departments will not change in single session
   // (but may change in the future)
-
-  // Potential optimization point: Use Met Departments from localStorage if available
   var getMetDeptsRequest = getMetDepartments();
   getMetDeptsRequest.addEventListener('load', function (event) {
-    // Save retrieved departments
     metDepts = getMetDeptsRequest.response.departments;
 
-    // Enables start button
+    // Enable start button once departments have been received
     $showSomething.classList.add('button-main');
     $showSomething.classList.add('bg-color-accent');
     $showSomething.classList.add('color-white');
@@ -302,8 +212,36 @@ function startup() {
   getMetDeptsRequest.send();
 }
 
-// Enable Like/Dislike buttons if artObjCache has at least one record
+function swapView(dataView) {
+  var $views = document.querySelectorAll('[data-view]');
+  for (var vwIdx = 0; vwIdx < $views.length; vwIdx++) {
+    if ($views[vwIdx].dataset.view === dataView) {
+      $views[vwIdx].classList.remove('hidden');
+    } else {
+      $views[vwIdx].classList.add('hidden');
+    }
+  }
+}
+
+function shuffleArray(array) {
+  // Fisher–Yates shuffle, guide from https://bost.ocks.org/mike/shuffle/
+  var arrayCopy = array.slice();
+  var m = arrayCopy.length;
+  var i;
+  var t;
+
+  while (m > 0) {
+    i = Math.floor(Math.random() * m--);
+    t = arrayCopy[m];
+    arrayCopy[m] = arrayCopy[i];
+    arrayCopy[i] = t;
+  }
+
+  return arrayCopy;
+}
+
 function enableLikeButtons(enable) {
+  // Allow/disallow users to interact with shown image
   if (enable) {
     $likeButton.classList.add('button-main');
     $dislikeButton.classList.add('button-main');
@@ -319,6 +257,10 @@ function enableLikeButtons(enable) {
   }
 }
 
+//                                //
+// Metropolitan Museum of Art API //
+//                                //
+
 function getMetDepartments() {
   var deptXhr = new XMLHttpRequest();
   deptXhr.open('GET', metEndpoint + 'departments');
@@ -330,7 +272,7 @@ function getMetDepartments() {
 // Functions for searching and returning art objects
 
 function metSearch(deptId, specificURL) {
-  // sets up the XHR but still waiting for onload function and sending
+  // returns configured XHR, but still waiting for onload function and sending
   // if specificURL is supplied, deptID has no effect
   var getUrl = '';
   if (specificURL !== undefined) {
@@ -347,7 +289,7 @@ function metSearch(deptId, specificURL) {
 }
 
 function metAcquireArt(objectId) {
-  // sets up the XHR but still waiting for onload function and sending
+  // returns configured XHR, but still waiting for onload function and sending
   var acquireXhr = new XMLHttpRequest();
   acquireXhr.open('GET', metEndpoint + 'objects/' + objectId);
   acquireXhr.responseType = 'json';
@@ -357,20 +299,6 @@ function metAcquireArt(objectId) {
 
 function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest, areResultsShuffled, deptId) {
   /*
-  handleAcquireResponse:
-    (runs once acquireRequest has loaded)
-  Get the response and store it in metArtObj
-  Store the objectID in data.shownObjectIds to keep track of what has been checked already
-  Check if metArtObj has an image URL
-    Check if we're at the start (clicked button starting the selection, not a like/dislike)
-      If so,
-        Set the image to the URL
-      If we're not at the start
-        Push this object into the preload cache
-    If it doesn't have a URL
-      Increment the index (e.g. from the 0th item to the 1st item)
-      Call this function again with the new index
-
   Variable sources:
   acquireRequest - passed in from handleSearchResponse()
   searchRequest - passed in from handleSearchResponse() from getArtwork()
@@ -383,16 +311,16 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
   metArtObj = acquireRequest.response;
 
   if (deptId === -1) {
-    // look up to get department id
+    // Backfill deptId if possible
     if (data.departmentLookup[metArtObj.department] !== undefined) {
       metArtObj.departmentId = data.departmentLookup[metArtObj.department];
     } else {
-      metArtObj.departmentId = -1; // keep -1 for now, backfill in the future
+      metArtObj.departmentId = -1;
     }
   } else {
     metArtObj.departmentId = deptId;
     // Add department and departmentID to lookup object, because these end up differing from metDepts
-    // This is assuming a department name is only ever associated with departmentID (unverified assumption)
+    // This is assuming a department name is only ever associated with one departmentID (unverified assumption)
     if (data.departmentLookup[metArtObj.department] === undefined) {
       data.departmentLookup[metArtObj.department] = deptId;
     }
@@ -403,11 +331,10 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
       // If this is the first time running, go straight to showing it rather than caching it
       setImage(metArtObj);
     } else {
-      // put new objects at the front so switching to different selectType starts taking place sooner
+      // put new objects at the front so effects of changing selectType start taking place sooner
+      // (artObjCache has stack-like behavior)
       artObjCache.unshift(metArtObj);
 
-      // If we have more than 2 items in the cache, allow operations again
-      // If we have 2 or less items in the cache, stop the user from advancing
       (artObjCache.length > 2) ? enableLikeButtons(true) : enableLikeButtons(false);
     }
   } else {
@@ -418,19 +345,6 @@ function handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, search
 
 function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId) {
   /*
-  handleSearchResponse:
-    (runs once searchRequest has loaded)
-  Check that the index isn't >= objectIDs.length
-    If it is, then we have reached the end of the array of objects
-      return false, and handle the false outside
-    If it isn't, then proceed
-  Check if the item at searchResultsIdx has already been shown before
-    If it has been shown, grab the next item in objectIDs and check again
-  Set up a request for the item at searchResultsIdx in objectIDs
-  Here's what should happen when it's done loading
-    Call handleAcquireResponse
-  Now send the request and let's see what happens
-
   Variable sources:
   searchRequest - passed in from getArtwork()
   searchResultsIdx - passed in from getArtwork()
@@ -444,13 +358,11 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
 
   // objectIDs is null when there are 0 results
   if (metSearchResults.objectIDs === null) {
-    // if no results, pull again
     getArtwork(false, searchType);
     // exit out of the function call because this metSearchResults is no longer useful
     return;
   }
 
-  // Prevent extraneous reshuffling
   if (areResultsShuffled === false) {
     metSearchResults.objectIDs = shuffleArray(metSearchResults.objectIDs);
     areResultsShuffled = true;
@@ -458,25 +370,22 @@ function handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResul
 
   var currentObjId = metSearchResults.objectIDs[searchResultsIdx];
 
-  // If this artwork been shown already, skip it
+  // Skip artwork that has already been shown
   while (data.shownObjectIds.includes(currentObjId) && searchResultsIdx < metSearchResults.objectIDs.length) {
     searchResultsIdx++;
     currentObjId = metSearchResults.objectIDs[searchResultsIdx];
   }
 
-  // if we exhausted the list of id's, pull again
-  // if we have a department with multiple back-to-back responses with no images,
-  // then try doing a new search entirely (only on isStart, to allow caching of
-  // these types of departments)
+  // If we exhausted the list of id's, pull again
+  // If we have a department with many consecutive no-image IDs on first
+  // image pull, then start a new search after maxRetries attempts
+  // (only on isStart, finding these IDs during caching is desired)
   if (searchResultsIdx >= metSearchResults.objectIDs.length || (isStart && searchResultsIdx >= maxRetries)) {
     getArtwork(isStart, searchType);
-    // exit out of the function call because this metSearchResults is no longer useful
     return;
   }
 
-  // Now that we have a new, never before seen currentObjId, we can attempt to acquire it.
   var acquireRequest = metAcquireArt(currentObjId);
-  // Store the acquired object ID so we know we've seen it already
   data.shownObjectIds.push(currentObjId);
   acquireRequest.addEventListener('load', function (event) {
     handleAcquireResponse(acquireRequest, isStart, searchResultsIdx, searchRequest, areResultsShuffled, deptId);
@@ -491,28 +400,14 @@ function getArtwork(isStart, searchType) {
   This function calls the functions that get artwork and put them into the artObjCache
   if they have an accessible URL. When isStart=true, the artwork will be immediately displayed
   and not put into artObjCache
-
-  Check if the preload cache has enough objects
-    If so, don't run this
-  Check if type of search is similar or random
-    If similar
-      Generate a search URL and pass it into metSearch() to generate the XHR for a similar search
-    If it's random
-      Get the index for a random department
-      Set up a search request for the random department
-  Instantiate an index i at 0 for going through the array of results
-  Set up a load event listener for the search results to handle the response when it arrives
-  Send the request
   */
   if (artObjCache.length >= cacheItemsNum) {
-    // Don't keep sending requests if the cache is full, prevent button spamming to abuse API
     return;
   }
 
   var searchRequest;
   var deptId;
   if (searchType === 'similar') {
-    // generate URL and search request
     var similarURL = generateSearchURL(similarNumOfProperties, similarNumOfValues);
     deptId = -1;
     searchRequest = metSearch(deptId, similarURL);
@@ -523,7 +418,7 @@ function getArtwork(isStart, searchType) {
     searchRequest = metSearch(deptId);
   }
 
-  var searchResultsIdx = 0; // this is declared outside of the search results, making it suitable for iterating through search results
+  var searchResultsIdx = 0;
   var areResultsShuffled = false;
   searchRequest.addEventListener('load', function (event) {
     handleSearchResponse(searchRequest, searchResultsIdx, isStart, areResultsShuffled, deptId);
@@ -532,7 +427,6 @@ function getArtwork(isStart, searchType) {
 }
 
 function addImageToImg(artObj, $img, requestFullSize) {
-  // Note: Modifies the passed in $img
   var objectName = (artObj.objectName === '') ? 'Untitled' : artObj.objectName;
   var artistName = (artObj.artistDisplayName === '') ? 'Unknown' : artObj.artistDisplayName;
   var objectDate = (artObj.objectDate === '') ? 'Unknown Date' : String(artObj.objectDate);
@@ -548,7 +442,7 @@ function addImageToImg(artObj, $img, requestFullSize) {
 }
 
 function setImage(artObj) {
-  // disable the buttons and show the loader as the image gets updated
+  // Disable the buttons and show the loader as the image gets updated
   // Set timer so loader only appears on cases where image loads slowly
   loaderTimerId = setTimeout(() => enableLikeButtons(false), 200);
   // displayArtObj holds the data for the image being decided on
@@ -566,7 +460,7 @@ function renderImage(artObj) {
 
   $imageContainer.appendChild($image);
 
-  // light up gallery text
+  // Light up gallery text on add
   $bottomSheetHeaderText.classList.add('color-flash');
   setTimeout(function () {
     $bottomSheetHeaderText.classList.remove('color-flash');
@@ -580,8 +474,7 @@ function appendImageToGallery($imgContainer, $gallery) {
 }
 
 function renderAllLiked() {
-  // function to append all liked images to the gallery
-  // Clear any children nodes
+  // Function to append all liked images to the gallery
   $bottomSheetGallery.replaceChildren();
 
   for (var i = 0; i < data.likedObjects.length; i++) {
@@ -592,18 +485,15 @@ function renderAllLiked() {
 
 function handleImageClick(event) {
   if (event.target.tagName === 'IMG' && !['detail-image', 'delete-image'].includes(event.target.id)) {
-    // Check if Delete Mode is active
     // In theory, Delete Mode cannot be active when the bottom sheet is closed
     // We don't need to worry about clicking display-image when Delete Mode is on
     if (deleteMode === false) {
       // Delete Mode off, show detail modal
-
-      // Put the selected image's data into data.viewingInDetail
       if (event.target.id === 'display-image') {
-        // clicked on the image being decided
+        // Clicked on the image being decided
         data.viewingInDetail = displayArtObj;
       } else {
-        // clicked on an image in the Likes gallery
+        // Clicked on an image in the Likes gallery
         for (var i = 0; i < data.likedObjects.length; i++) {
           if (String(data.likedObjects[i].objectID) === String(event.target.getAttribute('objectId'))) {
             data.viewingInDetail = data.likedObjects[i];
@@ -611,11 +501,8 @@ function handleImageClick(event) {
           }
         }
       }
-
-      // Point detail img to the selected image's url
       // Setting requestFullSize to false, images are VERY large
       addImageToImg(data.viewingInDetail, $detailModalImage, false);
-      // Populate art info label/placard with appropriate info
       addArtPlacard(data.viewingInDetail);
       $detailModalContainer.classList.remove('hidden');
     } else if (deleteMode === true) {
@@ -634,7 +521,7 @@ function handleImageClick(event) {
       $deleteModalContainer.classList.remove('hidden');
       $deletingGalleryImage = event.target.closest('div');
     }
-  // something other than an image (excl detail-image) was clicked
+  // Something other than an image (excl detail-image) was clicked
   } else if (data.viewingInDetail !== null && event.target.tagName === 'DIV') {
     // If the detail modal is open and anything other than the image or one of the text elements was clicked, close the detail modal
     $detailModalContainer.classList.add('hidden');
@@ -657,10 +544,8 @@ function handleSelectionChipClick(event) {
   if (event.target.tagName !== 'BUTTON') {
     return;
   }
-  // assign global variable
   searchType = event.target.dataset.searchType;
 
-  // mark only clicked one as selected
   for (var i = 0; i < $searchTypeChipsContainer.children.length; i++) {
     if (event.target === $searchTypeChipsContainer.children[i]) {
       $searchTypeChipsContainer.children[i].classList.add('chips-main-selected');
@@ -718,33 +603,16 @@ function addObjToMetadata(artObj, metadataProperty) {
 }
 
 function getSearchTerms(numProps) {
-  /* CURRENTLY SPECIFIC TO likedMetadata ONLY */
   var searchParams = [];
   var availableParams = Object.keys(metadata.likedMetadata);
   availableParams = shuffleArray(availableParams);
-
-  // if numProps > availableParams.length, all are sliced
   searchParams = availableParams.slice(0, numProps);
 
   return searchParams;
 }
 
 function getSearchValues(searchParams, numVals) {
-  /*
-  CURRENTLY SPECIFIC TO likedMetadata ONLY
-  Declare empty dictionary to hold the parameter and the values for that parameter to search on
-  Loop through each parameter (artistName, medium, etc.) in searchParams
-    Declare an empty array to store the value of a key as many times as the value to that key
-    Loop through each parameter's keys ("Pablo Picasso", "Claude Monet", etc.)
-      Loop from i=0 to value number
-        Push the value each time
-    Once array is full with representation weighted representation
-      Shuffle the array
-      pick numVals from it by slicing
-      remove duplicates with [...new Set(array)]
-      Assign sliced values to dictionary under parameter key
-  return dictionary
-  */
+  // Currently specific to likedMetadata only
   var searchVals = {};
   for (var i = 0; i < searchParams.length; i++) {
     var fullValues = [];
@@ -858,7 +726,6 @@ function generateSearchURL(numProps, numVals) {
   return searchURL;
 }
 
-// Temporary function until metadata is persisted to local storage
 function addAllToMetadata(artObjArray, metadataProperty) {
   for (var i = 0; i < artObjArray.length; i++) {
     addObjToMetadata(artObjArray[i], metadataProperty);
@@ -892,7 +759,6 @@ function updateDeleteInfoBox() {
 }
 
 function hideDeleteModeInfoBox() {
-  // to be called by setTimeout
   $deleteModeInfoBox.classList.add('invisible');
 }
 
@@ -909,14 +775,15 @@ function addArtPlacard(artObj) {
   var artMedium = artObj.medium;
   var artURL = artObj.objectURL;
 
-  // handle blank artist names
   if (artistName === '') {
     artistName = 'Unknown Artist';
   }
+
   // handle artist background exceptions
   if (artistNationality === '') {
     artistNationality = 'Unknown Culture';
   }
+
   if (artistBeginDate !== '' && artistEndDate !== '') {
     artistYears = ' ' + artistBeginDate + ' - ' + artistEndDate;
   } else if (artistBeginDate === '' && artistEndDate !== '') {
@@ -926,7 +793,7 @@ function addArtPlacard(artObj) {
   } else if (artistBeginDate === '' && artistEndDate === '') {
     artistYears = '';
   }
-  // handle art year exceptions
+
   if (artBeginDate !== '' && artEndDate !== '' && artBeginDate !== artEndDate) {
     artYears = artBeginDate + ' - ' + artEndDate;
   } else if (artBeginDate !== '' && artEndDate !== '' && artBeginDate === artEndDate) {
