@@ -59,10 +59,7 @@ h4 {
   font-weight: 700;
 }
 
-h5 {
-  font-size: 18px;
-  font-weight: 700;
-}
+/* Functional Classes */
 
 .ff-headers {
   font-family: Poppins, sans-serif;
@@ -70,22 +67,6 @@ h5 {
 
 .ff-main {
   font-family: Raleway, sans-serif;
-}
-
-.fw-light {
-  font-weight: 300;
-}
-
-.fw-normal {
-  font-weight: 400;
-}
-
-.fw-semibold {
-  font-weight: 600;
-}
-
-.fw-bold {
-  font-weight: 700;
 }
 
 .fs-30 {
@@ -151,11 +132,6 @@ h5 {
   border-radius: 10px;
 }
 
-.margin-tb-3 {
-  margin-top: 3rem;
-  margin-bottom: 3rem;
-}
-
 .margin-t-5 {
   margin-top: 5rem;
 }
@@ -174,10 +150,6 @@ h5 {
 
 .padding-t-3 {
   padding-top: 3rem;
-}
-
-.padding-t-3-mobile {
-  padding-top: 5rem;
 }
 
 .padding-t-1-mobile {
@@ -200,10 +172,6 @@ h5 {
   object-fit: contain;
 }
 
-.height-inherit {
-  height: inherit;
-}
-
 .height-full-no-header-no-bottom {
   height: calc(100vh - var(--header-height) - var(--bottom-header-height));
 }
@@ -224,7 +192,7 @@ h5 {
   display: initial;
 }
 
-/* non functional classes */
+/* Non Functional Classes */
 
 .override-height-64 {
   height: var(--header-height);
@@ -278,8 +246,6 @@ h5 {
   filter: brightness(1.1) saturate(150%);
 }
 
-/* add .chips-main:active behavior */
-
 .img-main {
   height: 424px;
 }
@@ -305,8 +271,6 @@ h5 {
 .img-gallery-container {
   height: 280px;
   padding: 12px 50px;
-
-  /* width from the col-1-3 class */
 }
 
 .img-gallery-container img {
@@ -323,7 +287,7 @@ h5 {
   backdrop-filter: blur(10px);
 }
 
-/* Specific Element CSS rules */
+/* Specific Element Rules */
 img:hover {
   cursor: pointer;
 }
@@ -374,12 +338,6 @@ img:hover {
   padding: 30px;
 }
 
-.icon::before {
-  display: inline-block;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-}
-
 .dislike-button {
   border-color: var(--color-no);
   background-color: var(--color-white);
@@ -402,7 +360,6 @@ img:hover {
   f2fe is poo
   f7a9 is cracked heart
   f165 is thumbs down
-
   */
 }
 

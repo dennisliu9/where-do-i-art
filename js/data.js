@@ -50,12 +50,22 @@ if (localStorage.getItem(localStorageKey) !== null) {
   var tmpDataKeys = Object.keys(tmpData);
   if (equalArrays(referenceDataKeys, tmpDataKeys)) {
     // Only load data from storage if the keys in storage match what the program now needs
-    // TODO: This is a TERRIBLE solution as users will lose their Likes between versions!
+    // Note: Users will lose their Likes between versions
     data = tmpData;
   }
+
+  // If there are null values that somehow make it into the liked data, remove it
+  data.likedObjects = data.likedObjects.filter(element => element !== null);
 }
 
 window.addEventListener('beforeunload', function (event) {
+  if (devLocalStorageOverrideFlag) {
+    return;
+  }
+  this.localStorage.setItem(localStorageKey, JSON.stringify(data));
+});
+
+window.addEventListener('pagehide', function (event) {
   if (devLocalStorageOverrideFlag) {
     return;
   }
