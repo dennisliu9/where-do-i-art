@@ -45,21 +45,3 @@ Try the application live here: [GitHub Pages Deployment](https://dennisliu9.gith
 * Users can filter their likes by metadata attributes.
 * Users can choose what metadata to use as criteria when retrieving new artwork.
 * Users can add personal tags to liked artwork.
-
-## Development
-
-### System Requirements
-
-* A relatively modern browser (Chrome, Firefox, Safari, etc.)
-  * Internet Explorer not supported
-
-### Getting Started
-
-1. Clone the repository.
-
-  ```shell
-  git clone https://github.com/dennisliu9/ajax-project
-  cd ajax-project
-  ```
-
-2. Open `index.html` in the browser.
