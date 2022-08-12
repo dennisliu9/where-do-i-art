@@ -83,6 +83,9 @@ $dislikeButton.addEventListener('click', function (event) {
   if ($dislikeButton.classList.contains('button-main-disabled')) {
     return;
   }
+  if (artObjCache.length === 0) {
+    return;
+  }
   data.dislikedObjects.push(displayArtObj);
   nextArtObj = artObjCache.shift();
   getArtwork(false, searchType);
@@ -92,6 +95,9 @@ $dislikeButton.addEventListener('click', function (event) {
 $likeButton.addEventListener('click', function (event) {
   event.preventDefault();
   if ($likeButton.classList.contains('button-main-disabled')) {
+    return;
+  }
+  if (artObjCache.length === 0) {
     return;
   }
   data.likedObjects.push(displayArtObj);
@@ -161,6 +167,10 @@ window.addEventListener('offline', () => {
 // If image URL leads to 404, dislike and move to the next
 $displayImage.addEventListener('error', () => {
   data.dislikedObjects.push(displayArtObj);
+  if (artObjCache.length === 0) {
+    getArtwork(true, searchType);
+    return;
+  }
   nextArtObj = artObjCache.shift();
   getArtwork(false, searchType);
   setImage(nextArtObj);
