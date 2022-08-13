@@ -10,7 +10,7 @@ I made this app so that newcomers to art (including myself!) can jump right into
 
 ## Live Demo
 
-Try the application live here: [GitHub Pages Deployment](https://dennisliu9.github.io/ajax-project/)
+Try the application live here: [GitHub Pages Deployment](https://dennisliu9.github.io/where-do-i-art/)
 
 ## Technologies Used
 
