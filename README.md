@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/21215658/186851801-ce1bf5f6-fa46-404b-926c-13e95e8b734b.PNG" />
+</p>
+
 # Where Do I.Art?
 
 A web application for the art curious who want to discover what art they like.
